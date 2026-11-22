@@ -9,33 +9,32 @@ export default function ResumeBuilder() {
   const [lang, setLang] = useState("ar");
   const [loadingField, setLoadingField] = useState(null);
 
-  const [resume, setResume] = useState({
-    fullName: "أحمد محمد العتيبي",
-    jobTitle: "مهندس برمجيات أول | مطور تطبيقات ويب",
-    email: "ahmed.dev@example.com",
-    phone: "+965 9000 0000",
-    location: "الكويت",
-    summary: "مطور برمجيات بخبرة تتجاوز 5 سنوات في بناء تطبيقات الويب عالية الأداء باستخدام React و Node.js، مع شغف بتحسين تجربة المستخدم وأتمتة العمليات.",
+ const [resume, setResume] = useState({
+    fullName: "",
+    jobTitle: "",
+    email: "",
+    phone: "",
+    location: "",
+    summary: "",
     experiences: [
       {
         id: 1,
-        role: "مطور واجهات أمامية أول",
-        company: "شركة التقنية المتقدمة",
-        period: "2022 - الحالي",
-        description: "• قيادة فريق مكون من 4 مطورين لإعادة بناء المنصة الرئيسية مما رفع سرعة التحميل بنسبة 40%.\n• تطوير مكونات واجهة مستخدم قابلة لإعادة الاستخدام وتقليل الأخطاء البرمجية بنسبة 25%."
+        role: "",
+        company: "",
+        period: "",
+        description: ""
       }
     ],
     education: [
       {
         id: 1,
-        degree: "بكالوريوس علوم الحاسوب",
-        institution: "جامعة الكويت",
-        year: "2019"
+        degree: "",
+        institution: "",
+        year: ""
       }
     ],
-    skills: "JavaScript, React, Next.js, Node.js, Tailwind CSS, Git, REST APIs, Agile"
+    skills: ""
   });
-
   // استدعاء Gemini AI لتحسين النصوص
   const enhanceWithAI = async (text, type, expId = null) => {
     if (!text.trim()) return alert("يرجى كتابة بعض الكلمات أو المسمى الوظيفي أولاً ليتمكن الذكاء الاصطناعي من صياغته.");
