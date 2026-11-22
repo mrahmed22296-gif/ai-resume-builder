@@ -1,6 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
+const FALLBACK_MODELS = [
+  process.env.GEMINI_MODEL || "gemini-3.8-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-3.8-pro",
+];
+
 export async function POST(req) {
   try {
     const { prompt, type, language } = await req.json();
@@ -12,11 +18,6 @@ export async function POST(req) {
         { status: 500 }
       );
     }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
-    });
 
     const langInstruction =
       language === "ar"
@@ -30,11 +31,29 @@ export async function POST(req) {
       systemPrompt = `أنت خبير كتابة سير ذاتية متوافقة مع أنظمة ATS. حوّل الوصف الوظيفي التالي إلى 3-4 نقاط إنجاز احترافية تبدأ بأفعال قوية وتركز على النتائج القابلة للقياس (استخدم الرمز • لكل نقطة بدون مقدمات): "${prompt}". ${langInstruction}`;
     }
 
-    const result = await model.generateContent(systemPrompt);
-    const response = await result.response;
-    const text = response.text();
+    const genAI = new GoogleGenerativeAI(apiKey);
+    let lastError = null;
 
-    return NextResponse.json({ result: text.trim() });
+    for (const modelName of FALLBACK_MODELS) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(systemPrompt);
+        const response = await result.response;
+        const text = response.text();
+
+        return NextResponse.json({ result: text.trim() });
+      } catch (err) {
+        lastError = err;
+        const msg = err?.message || "";
+        // إذا كان النموذج مزدحمًا (503) أو غير متوفر (404)، انتقل للنموذج التالي تلقائيًا
+        if (msg.includes("503") || msg.includes("404") || msg.includes("overloaded")) {
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    throw lastError;
   } catch (error) {
     console.error("Gemini API Error:", error);
     return NextResponse.json(
