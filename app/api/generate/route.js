@@ -14,7 +14,7 @@ export async function POST(req) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });[cite: 19]
 
     const langInstruction = language === "ar"
       ? "اكتب النتيجة باللغة العربية الفصحى المهنية."
