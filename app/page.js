@@ -95,6 +95,9 @@ export default function ResumeBuilder() {
     ],
     skills: ""
   });
+  const latestForm = useRef({ resume, lang });
+  latestForm.current = { resume, lang };
+
   // استدعاء Gemini AI لتحسين النصوص
   const enhanceWithAI = async (text, type, expId = null) => {
     const isArabic = lang === "ar";
@@ -102,13 +105,22 @@ export default function ResumeBuilder() {
       alert(isArabic ? "اكتب المسمى الوظيفي أو وصفاً مختصراً أولاً." : "Enter a job title or a short description first.");
       return;
     }
+    if (text.trim().length > 5000) {
+      alert(isArabic ? "اختصر النص إلى 5000 حرف أو أقل ثم حاول مرة أخرى." : "Shorten the text to 5000 characters or fewer, then try again.");
+      return;
+    }
     if (aiRequestInFlight.current) return;
     aiRequestInFlight.current = true;
     setLoadingField(expId !== null ? `exp-${expId}` : type);
 
+    const requestLanguage = lang;
+    const requestPrompt = text.trim();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
+        signal: controller.signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: text.trim(), type, language: lang })
       });
@@ -117,6 +129,18 @@ export default function ResumeBuilder() {
         throw new Error("Invalid AI response");
       }
       const result = data.result.trim();
+      const latest = latestForm.current;
+      const currentExperience = latest.resume.experiences.find(exp => exp.id === expId);
+      const currentPrompt = type === "summary"
+        ? [latest.resume.jobTitle, latest.resume.summary]
+        : currentExperience ? [currentExperience.role, currentExperience.company, currentExperience.description] : null;
+      if (latest.lang !== requestLanguage || !currentPrompt ||
+          currentPrompt.map(value => value.trim()).filter(Boolean).join(" - ") !== requestPrompt) {
+        alert(latest.lang === "ar"
+          ? "لم يُطبّق النص لأنك عدّلت البيانات أو اللغة أثناء الانتظار. تعديلاتك محفوظة؛ يمكنك المحاولة مجدداً."
+          : "The result was not applied because you edited the source text or language while waiting. Your edits are safe; you can try again.");
+        return;
+      }
       setResume(current => {
         if (type === "summary") return { ...current, summary: result };
         if (type === "experience" && expId !== null) {
@@ -129,6 +153,7 @@ export default function ResumeBuilder() {
     } catch {
       alert(isArabic ? "تعذّر إنشاء النص. حاول مرة أخرى لاحقاً، بياناتك لم تتغير." : "Could not generate text. Try again later. Your data has not changed.");
     } finally {
+      clearTimeout(timeout);
       aiRequestInFlight.current = false;
       setLoadingField(null);
     }
@@ -615,4 +640,4 @@ export default function ResumeBuilder() {
       </main>
     </div>
   );
-              }
+}
