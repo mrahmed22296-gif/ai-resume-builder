@@ -72,7 +72,9 @@ export async function POST(req) {
 
     throw lastError;
   } catch (error) {
-    console.error("AI generation failed.");
+    const errClass = (error && error.constructor && error.constructor.name) || "UnknownError";
+    const errMatch = error && typeof error.message === "string" ? error.message.match(/\b([1-5]\d\d)\b/) : null;
+    console.error("AI generation failed. class=" + errClass + " status=" + (errMatch ? errMatch[1] : "n/a"));
     return NextResponse.json(
       { error: "AI generation is temporarily unavailable. Please try again later." },
       { status: 500 }
