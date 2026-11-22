@@ -72,9 +72,18 @@ export async function POST(req) {
 
     throw lastError;
   } catch (error) {
-    const errClass = (error && error.constructor && error.constructor.name) || "UnknownError";
-    const errMatch = error && typeof error.message === "string" ? error.message.match(/\b([1-5]\d\d)\b/) : null;
-    console.error("AI generation failed. class=" + errClass + " status=" + (errMatch ? errMatch[1] : "n/a"));
+    const status = Number.isInteger(error?.status) ? error.status : "unknown";
+    const allowedReasons = new Set(["API_KEY_INVALID", "API_KEY_EXPIRED", "API_KEY_SERVICE_BLOCKED", "API_KEY_HTTP_REFERRER_BLOCKED", "API_KEY_IP_ADDRESS_BLOCKED", "SERVICE_DISABLED", "BILLING_DISABLED", "CONSUMER_INVALID", "RATE_LIMIT_EXCEEDED"]);
+    const reason = Array.isArray(error?.errorDetails)
+      ? error.errorDetails.map(detail => detail?.reason).find(value => allowedReasons.has(value)) || "unclassified"
+      : "unclassified";
+    const message = typeof error?.message === "string" ? error.message.toLowerCase() : "";
+    const category = /location.*not supported|not available.*country/.test(message) ? "region_unavailable"
+      : /api key.*expired/.test(message) ? "key_expired"
+      : /api key.*not valid|api key.*invalid/.test(message) ? "key_invalid"
+      : /reported.*leaked|key.*leaked/.test(message) ? "key_reported_leaked"
+      : "unclassified";
+    console.error("AI generation failed.", { status, reason, category });
     return NextResponse.json(
       { error: "AI generation is temporarily unavailable. Please try again later." },
       { status: 500 }
