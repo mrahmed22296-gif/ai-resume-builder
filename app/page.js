@@ -282,21 +282,21 @@ export default function ResumeBuilder() {
   return (
     <div className="resume-builder min-h-screen flex flex-col">
       {/* الشريط العلوي */}
-      <header className="resume-app-header bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <div className="bg-blue-600 text-white p-2 rounded-lg">
+      <header className="resume-app-header bg-black/60 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-4 sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="bg-gradient-to-br from-amber-300 to-amber-500 text-black p-2 rounded-xl shadow-lg shadow-amber-500/25">
             <Sparkles size={22} />
           </div>
           <div>
-            <h1 className="font-bold text-lg text-slate-800">AI Resume Pro</h1>
-            <p className="text-xs text-slate-500">{t.poweredBy}</p>
+            <h1 className="font-bold text-lg text-white tracking-tight">AI Resume Pro</h1>
+            <p className="text-xs text-zinc-400">{t.poweredBy}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <button
             onClick={() => setLang(lang === "ar" ? "en" : "ar")}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-zinc-200 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition"
           >
             <Globe size={16} />
             {lang === "ar" ? "English" : "العربية"}
@@ -304,7 +304,7 @@ export default function ResumeBuilder() {
 
           <button
             onClick={exportToWord}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-amber-300 bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/25 rounded-xl transition"
           >
             <FileText size={16} />
             {t.downloadWord}
@@ -312,7 +312,7 @@ export default function ResumeBuilder() {
 
           <button
             onClick={exportToPDF}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-black bg-amber-400 hover:bg-amber-300 rounded-xl shadow-lg shadow-amber-400/25 transition"
           >
             <Download size={16} />
             {t.downloadPdf}
@@ -321,61 +321,61 @@ export default function ResumeBuilder() {
       </header>
 
       {/* المحتوى الرئيسي */}
-      <main className="resume-main flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
+      <main className="resume-main flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+
         {/* قسم إدخال البيانات (يمين) */}
         <div className="resume-editor lg:col-span-6 space-y-6">
-          
+
           {/* المعلومات الشخصية */}
-          <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-            <h2 className="font-bold text-base text-slate-800 border-b pb-2">{t.personal}</h2>
+          <section className="bg-[#141417] p-6 rounded-2xl border border-white/10 shadow-xl shadow-black/40 space-y-4">
+            <h2 className="font-bold text-base text-zinc-100 border-b border-white/10 pb-2">{t.personal}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 type="text"
                 placeholder={t.fullName}
                 value={resume.fullName}
                 onChange={(e) => setResume({ ...resume, fullName: e.target.value })}
-                className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="p-2.5 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
               />
               <input
                 type="text"
                 placeholder={t.jobTitle}
                 value={resume.jobTitle}
                 onChange={(e) => setResume({ ...resume, jobTitle: e.target.value })}
-                className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="p-2.5 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
               />
               <input
                 type="email"
                 placeholder={t.email}
                 value={resume.email}
                 onChange={(e) => setResume({ ...resume, email: e.target.value })}
-                className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="p-2.5 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
               />
               <input
                 type="text"
                 placeholder={t.phone}
                 value={resume.phone}
                 onChange={(e) => setResume({ ...resume, phone: e.target.value })}
-                className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="p-2.5 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
               />
               <input
                 type="text"
                 placeholder={t.location}
                 value={resume.location}
                 onChange={(e) => setResume({ ...resume, location: e.target.value })}
-                className="p-2.5 border rounded-lg text-sm md:col-span-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="p-2.5 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-xl text-sm md:col-span-2 focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
               />
             </div>
           </section>
 
           {/* النبذة المهنية */}
-          <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-3">
-            <div className="flex items-center justify-between border-b pb-2">
-              <h2 className="font-bold text-base text-slate-800">{t.summary}</h2>
+          <section className="bg-[#141417] p-6 rounded-2xl border border-white/10 shadow-xl shadow-black/40 space-y-3">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <h2 className="font-bold text-base text-zinc-100">{t.summary}</h2>
               <button
                 onClick={() => enhanceWithAI([resume.jobTitle, resume.summary].map(value => value.trim()).filter(Boolean).join(" - "), "summary")}
                 disabled={loadingField !== null}
-                className="flex items-center gap-1.5 text-xs font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 px-3 py-1.5 rounded-full transition"
+                className="flex items-center gap-1.5 text-xs font-semibold bg-amber-400/10 text-amber-300 hover:bg-amber-400/20 border border-amber-400/25 px-3 py-1.5 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loadingField === "summary" ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
                 {t.draft}
@@ -386,14 +386,14 @@ export default function ResumeBuilder() {
               placeholder={t.summaryHint}
               value={resume.summary}
               onChange={(e) => setResume({ ...resume, summary: e.target.value })}
-              className="w-full p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full p-2.5 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
             />
           </section>
 
           {/* الخبرات العملية */}
-          <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between border-b pb-2">
-              <h2 className="font-bold text-base text-slate-800">{t.experienceHeading}</h2>
+          <section className="bg-[#141417] p-6 rounded-2xl border border-white/10 shadow-xl shadow-black/40 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <h2 className="font-bold text-base text-zinc-100">{t.experienceHeading}</h2>
               <button
                 onClick={() =>
                   setResume({
@@ -404,16 +404,16 @@ export default function ResumeBuilder() {
                     ]
                   })
                 }
-                className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800"
+                className="flex items-center gap-1 text-xs font-semibold text-amber-300 hover:text-amber-200 transition"
               >
                 <Plus size={15} /> {t.addExperience}
               </button>
             </div>
 
             {resume.experiences.map((exp, index) => (
-              <div key={exp.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+              <div key={exp.id} className="p-4 bg-white/[0.04] rounded-xl border border-white/10 space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-slate-500">{t.experience} #{index + 1}</span>
+                  <span className="text-xs font-bold text-zinc-500">{t.experience} #{index + 1}</span>
                   {resume.experiences.length > 1 && (
                     <button
                       onClick={() =>
@@ -422,7 +422,7 @@ export default function ResumeBuilder() {
                           experiences: resume.experiences.filter((item) => item.id !== exp.id)
                         })
                       }
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-400 hover:text-red-300 transition"
                     >
                       <Trash2 size={15} />
                     </button>
@@ -439,7 +439,7 @@ export default function ResumeBuilder() {
                       updated[index].role = e.target.value;
                       setResume({ ...resume, experiences: updated });
                     }}
-                    className="p-2 border rounded text-sm bg-white"
+                    className="p-2 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
                   />
                   <input
                     type="text"
@@ -450,7 +450,7 @@ export default function ResumeBuilder() {
                       updated[index].company = e.target.value;
                       setResume({ ...resume, experiences: updated });
                     }}
-                    className="p-2 border rounded text-sm bg-white"
+                    className="p-2 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
                   />
                   <input
                     type="text"
@@ -461,7 +461,7 @@ export default function ResumeBuilder() {
                       updated[index].period = e.target.value;
                       setResume({ ...resume, experiences: updated });
                     }}
-                    className="p-2 border rounded text-sm bg-white"
+                    className="p-2 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
                   />
                 </div>
 
@@ -470,7 +470,7 @@ export default function ResumeBuilder() {
                     <button
                       onClick={() => enhanceWithAI([exp.role, exp.company, exp.description].map(value => value.trim()).filter(Boolean).join(" - "), "experience", exp.id)}
                       disabled={loadingField !== null}
-                      className="flex items-center gap-1 text-xs font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 px-2.5 py-1 rounded-full transition"
+                      className="flex items-center gap-1 text-xs font-semibold bg-amber-400/10 text-amber-300 hover:bg-amber-400/20 border border-amber-400/25 px-2.5 py-1 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loadingField === `exp-${exp.id}` ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
                       {t.improve}
@@ -485,7 +485,7 @@ export default function ResumeBuilder() {
                       updated[index].description = e.target.value;
                       setResume({ ...resume, experiences: updated });
                     }}
-                    className="w-full p-2 border rounded text-sm bg-white"
+                    className="w-full p-2 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
                   />
                 </div>
               </div>
@@ -493,8 +493,8 @@ export default function ResumeBuilder() {
           </section>
 
           {/* التعليم والمهارات */}
-          <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-            <h2 className="font-bold text-base text-slate-800 border-b pb-2">{t.educationSkills}</h2>
+          <section className="bg-[#141417] p-6 rounded-2xl border border-white/10 shadow-xl shadow-black/40 space-y-4">
+            <h2 className="font-bold text-base text-zinc-100 border-b border-white/10 pb-2">{t.educationSkills}</h2>
             {resume.education.map((edu, idx) => (
               <div key={edu.id} className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <input
@@ -506,7 +506,7 @@ export default function ResumeBuilder() {
                     updated[idx].degree = e.target.value;
                     setResume({ ...resume, education: updated });
                   }}
-                  className="p-2 border rounded text-sm"
+                  className="p-2 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
                 />
                 <input
                   type="text"
@@ -517,7 +517,7 @@ export default function ResumeBuilder() {
                     updated[idx].institution = e.target.value;
                     setResume({ ...resume, education: updated });
                   }}
-                  className="p-2 border rounded text-sm"
+                  className="p-2 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
                 />
                 <input
                   type="text"
@@ -528,18 +528,18 @@ export default function ResumeBuilder() {
                     updated[idx].year = e.target.value;
                     setResume({ ...resume, education: updated });
                   }}
-                  className="p-2 border rounded text-sm"
+                  className="p-2 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
                 />
               </div>
             ))}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">{t.skillsHint}</label>
+              <label className="block text-xs font-semibold text-zinc-400 mb-1">{t.skillsHint}</label>
               <input
                 type="text"
                 value={resume.skills}
                 onChange={(e) => setResume({ ...resume, skills: e.target.value })}
-                className="w-full p-2.5 border rounded-lg text-sm"
+                className="w-full p-2.5 bg-black/40 border border-white/10 text-zinc-100 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-amber-400/60 focus:border-amber-400/40 outline-none transition"
               />
             </div>
           </section>
@@ -551,7 +551,7 @@ export default function ResumeBuilder() {
             <div
               id="resume-preview"
               dir={lang === "ar" ? "rtl" : "ltr"}
-              className="bg-white shadow-lg border border-slate-200 rounded-sm p-10 min-h-[842px] text-slate-800"
+              className="bg-white shadow-2xl rounded-lg ring-1 ring-black/20 p-10 min-h-[842px] text-slate-800"
             >
               {/* رأس السيرة الذاتية */}
               <div className="border-b-2 border-slate-800 pb-4 mb-6 text-center">
