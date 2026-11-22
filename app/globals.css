@@ -2,9 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html[dir="rtl"] body {
+  font-family: var(--font-arabic), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 32rem at 85% -10%, rgba(251, 191, 36, 0.09), transparent 60%),
+    radial-gradient(55rem 28rem at 5% -15%, rgba(251, 191, 36, 0.05), transparent 60%);
+}
+
+::selection {
+  background: rgba(251, 191, 36, 0.35);
+  color: #ffffff;
+}
+
 @media print {
   @page { size: A4; margin: 14mm; }
   html, body { margin: 0; padding: 0; background: white !important; }
+  body::before { display: none !important; }
   .resume-builder { display: block !important; min-height: 0 !important; }
   .resume-app-header, .resume-editor { display: none !important; }
   .resume-main { display: block !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
