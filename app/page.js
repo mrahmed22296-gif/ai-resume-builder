@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Sparkles, Download, FileText, Plus, Trash2, Globe, Loader2 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
 import { saveAs } from "file-saver";
@@ -8,6 +8,66 @@ import { saveAs } from "file-saver";
 export default function ResumeBuilder() {
   const [lang, setLang] = useState("ar");
   const [loadingField, setLoadingField] = useState(null);
+  const aiRequestInFlight = useRef(false);
+  const labels = {
+  "ar": {
+    "poweredBy": "مدعوم بواسطة Gemini AI",
+    "downloadWord": "تحميل Word",
+    "downloadPdf": "تحميل PDF",
+    "personal": "المعلومات الشخصية",
+    "fullName": "الاسم الكامل",
+    "jobTitle": "المسمى الوظيفي",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الهاتف",
+    "location": "المدينة / الدولة",
+    "summary": "النبذة المهنية",
+    "draft": "صياغة بـ Gemini",
+    "summaryHint": "اكتب نبذة مختصرة أو كلمات مفتاحية وسيقوم Gemini بصياغتها...",
+    "experienceHeading": "الخبرات العملية",
+    "addExperience": "إضافة خبرة",
+    "company": "اسم الشركة",
+    "period": "الفترة (مثال: 2021 - 2024)",
+    "improve": "تحسين المهام بـ Gemini",
+    "descriptionHint": "اكتب مهامك باختصار وسيحولها Gemini إلى نقاط إنجاز احترافية...",
+    "educationSkills": "المؤهلات العلمية والمهارات",
+    "degree": "الدرجة العلمية",
+    "institution": "الجامعة / المؤسسة",
+    "year": "سنة التخرج",
+    "skillsHint": "المهارات (افصل بينها بفاصلة)",
+    "experience": "خبرة"
+  },
+  "en": {
+    "poweredBy": "Powered by Gemini AI",
+    "downloadWord": "Download Word",
+    "downloadPdf": "Download PDF",
+    "personal": "Personal information",
+    "fullName": "Full name",
+    "jobTitle": "Job title",
+    "email": "Email address",
+    "phone": "Phone number",
+    "location": "City / Country",
+    "summary": "Professional summary",
+    "draft": "Draft with Gemini",
+    "summaryHint": "Enter a short summary or keywords for Gemini to refine...",
+    "experienceHeading": "Work experience",
+    "addExperience": "Add experience",
+    "company": "Company name",
+    "period": "Period (e.g. 2021 - 2024)",
+    "improve": "Improve with Gemini",
+    "descriptionHint": "Describe your duties for Gemini to turn into professional achievement points...",
+    "educationSkills": "Education and skills",
+    "degree": "Degree",
+    "institution": "University / Institution",
+    "year": "Graduation year",
+    "skillsHint": "Skills (comma separated)",
+    "experience": "Experience"
+  }
+};
+  const t = labels[lang];
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  }, [lang]);
 
  const [resume, setResume] = useState({
     fullName: "",
@@ -35,36 +95,66 @@ export default function ResumeBuilder() {
     ],
     skills: ""
   });
+  const latestForm = useRef({ resume, lang });
+  latestForm.current = { resume, lang };
+
   // استدعاء Gemini AI لتحسين النصوص
   const enhanceWithAI = async (text, type, expId = null) => {
-    if (!text.trim()) return alert("يرجى كتابة بعض الكلمات أو المسمى الوظيفي أولاً ليتمكن الذكاء الاصطناعي من صياغته.");
-    
-    const loadKey = expId ? `exp-${expId}` : type;
-    setLoadingField(loadKey);
+    const isArabic = lang === "ar";
+    if (!text.trim()) {
+      alert(isArabic ? "اكتب المسمى الوظيفي أو وصفاً مختصراً أولاً." : "Enter a job title or a short description first.");
+      return;
+    }
+    if (text.trim().length > 5000) {
+      alert(isArabic ? "اختصر النص إلى 5000 حرف أو أقل ثم حاول مرة أخرى." : "Shorten the text to 5000 characters or fewer, then try again.");
+      return;
+    }
+    if (aiRequestInFlight.current) return;
+    aiRequestInFlight.current = true;
+    setLoadingField(expId !== null ? `exp-${expId}` : type);
 
+    const requestLanguage = lang;
+    const requestPrompt = text.trim();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
+        signal: controller.signal,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: text, type, language: lang })
+        body: JSON.stringify({ prompt: text.trim(), type, language: lang })
       });
       const data = await res.json();
-
-      if (data.error) {
-        alert(data.error);
-      } else if (type === "summary") {
-        setResume({ ...resume, summary: data.result });
-      } else if (type === "experience" && expId) {
-        setResume({
-          ...resume,
-          experiences: resume.experiences.map((exp) =>
-            exp.id === expId ? { ...exp, description: data.result } : exp
-          )
-        });
+      if (!res.ok || typeof data.result !== "string" || !data.result.trim()) {
+        throw new Error("Invalid AI response");
       }
-    } catch (err) {
-      alert("فشل الاتصال بالخادم.");
+      const result = data.result.trim();
+      const latest = latestForm.current;
+      const currentExperience = latest.resume.experiences.find(exp => exp.id === expId);
+      const currentPrompt = type === "summary"
+        ? [latest.resume.jobTitle, latest.resume.summary]
+        : currentExperience ? [currentExperience.role, currentExperience.company, currentExperience.description] : null;
+      if (latest.lang !== requestLanguage || !currentPrompt ||
+          currentPrompt.map(value => value.trim()).filter(Boolean).join(" - ") !== requestPrompt) {
+        alert(latest.lang === "ar"
+          ? "لم يُطبّق النص لأنك عدّلت البيانات أو اللغة أثناء الانتظار. تعديلاتك محفوظة؛ يمكنك المحاولة مجدداً."
+          : "The result was not applied because you edited the source text or language while waiting. Your edits are safe; you can try again.");
+        return;
+      }
+      setResume(current => {
+        if (type === "summary") return { ...current, summary: result };
+        if (type === "experience" && expId !== null) {
+          return { ...current, experiences: current.experiences.map(exp =>
+            exp.id === expId ? { ...exp, description: result } : exp
+          ) };
+        }
+        return current;
+      });
+    } catch {
+      alert(isArabic ? "تعذّر إنشاء النص. حاول مرة أخرى لاحقاً، بياناتك لم تتغير." : "Could not generate text. Try again later. Your data has not changed.");
     } finally {
+      clearTimeout(timeout);
+      aiRequestInFlight.current = false;
       setLoadingField(null);
     }
   };
@@ -72,7 +162,7 @@ export default function ResumeBuilder() {
   // تحميل كملف Word (.docx)
   const exportToWord = async () => {
     const isRtl = lang === "ar";
-    const align = isRtl ? AlignmentType.RIGHT : AlignmentType.LEFT;
+    const align = AlignmentType.START;
 
     const doc = new Document({
       sections: [
@@ -96,7 +186,7 @@ export default function ResumeBuilder() {
               alignment: AlignmentType.CENTER,
               spacing: { after: 300 },
               children: [
-                new TextRun({ text: `${resume.email}  |  ${resume.phone}  |  ${resume.location}`, size: 20, color: "64748B" })
+                new TextRun({ text: [resume.email, resume.phone, resume.location].map(value => value.trim()).filter(Boolean).join("  |  "), size: 20, color: "64748B" })
               ]
             }),
 
@@ -121,7 +211,7 @@ export default function ResumeBuilder() {
               bidirectional: isRtl,
               children: [new TextRun({ text: isRtl ? "الخبرات العملية" : "Work Experience", bold: true, size: 26, color: "0F172A" })]
             }),
-            ...resume.experiences.flatMap((exp) => [
+            ...resume.experiences.filter(exp => [exp.role, exp.company, exp.period, exp.description].some(value => value.trim())).flatMap((exp) => [
               new Paragraph({
                 alignment: align,
                 bidirectional: isRtl,
@@ -150,7 +240,7 @@ export default function ResumeBuilder() {
               spacing: { before: 200 },
               children: [new TextRun({ text: isRtl ? "المؤهلات العلمية" : "Education", bold: true, size: 26, color: "0F172A" })]
             }),
-            ...resume.education.map(
+            ...resume.education.filter(edu => [edu.degree, edu.institution, edu.year].some(value => value.trim())).map(
               (edu) =>
                 new Paragraph({
                   alignment: align,
@@ -190,16 +280,16 @@ export default function ResumeBuilder() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="resume-builder min-h-screen flex flex-col">
       {/* الشريط العلوي */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4">
+      <header className="resume-app-header bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <div className="bg-blue-600 text-white p-2 rounded-lg">
             <Sparkles size={22} />
           </div>
           <div>
             <h1 className="font-bold text-lg text-slate-800">AI Resume Pro</h1>
-            <p className="text-xs text-slate-500">مدعوم بواسطة Gemini AI</p>
+            <p className="text-xs text-slate-500">{t.poweredBy}</p>
           </div>
         </div>
 
@@ -217,7 +307,7 @@ export default function ResumeBuilder() {
             className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition"
           >
             <FileText size={16} />
-            تحميل Word
+            {t.downloadWord}
           </button>
 
           <button
@@ -225,52 +315,52 @@ export default function ResumeBuilder() {
             className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition"
           >
             <Download size={16} />
-            تحميل PDF
+            {t.downloadPdf}
           </button>
         </div>
       </header>
 
       {/* المحتوى الرئيسي */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <main className="resume-main flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* قسم إدخال البيانات (يمين) */}
-        <div className="lg:col-span-6 space-y-6">
+        <div className="resume-editor lg:col-span-6 space-y-6">
           
           {/* المعلومات الشخصية */}
           <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-            <h2 className="font-bold text-base text-slate-800 border-b pb-2">المعلومات الشخصية</h2>
+            <h2 className="font-bold text-base text-slate-800 border-b pb-2">{t.personal}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 type="text"
-                placeholder="الاسم الكامل"
+                placeholder={t.fullName}
                 value={resume.fullName}
                 onChange={(e) => setResume({ ...resume, fullName: e.target.value })}
                 className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
               <input
                 type="text"
-                placeholder="المسمى الوظيفي"
+                placeholder={t.jobTitle}
                 value={resume.jobTitle}
                 onChange={(e) => setResume({ ...resume, jobTitle: e.target.value })}
                 className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
               <input
                 type="email"
-                placeholder="البريد الإلكتروني"
+                placeholder={t.email}
                 value={resume.email}
                 onChange={(e) => setResume({ ...resume, email: e.target.value })}
                 className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
               <input
                 type="text"
-                placeholder="رقم الهاتف"
+                placeholder={t.phone}
                 value={resume.phone}
                 onChange={(e) => setResume({ ...resume, phone: e.target.value })}
                 className="p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
               <input
                 type="text"
-                placeholder="المدينة / الدولة"
+                placeholder={t.location}
                 value={resume.location}
                 onChange={(e) => setResume({ ...resume, location: e.target.value })}
                 className="p-2.5 border rounded-lg text-sm md:col-span-2 focus:ring-2 focus:ring-blue-500 outline-none"
@@ -281,19 +371,19 @@ export default function ResumeBuilder() {
           {/* النبذة المهنية */}
           <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-3">
             <div className="flex items-center justify-between border-b pb-2">
-              <h2 className="font-bold text-base text-slate-800">النبذة المهنية</h2>
+              <h2 className="font-bold text-base text-slate-800">{t.summary}</h2>
               <button
-                onClick={() => enhanceWithAI(`${resume.jobTitle} - ${resume.summary}`, "summary")}
-                disabled={loadingField === "summary"}
+                onClick={() => enhanceWithAI([resume.jobTitle, resume.summary].map(value => value.trim()).filter(Boolean).join(" - "), "summary")}
+                disabled={loadingField !== null}
                 className="flex items-center gap-1.5 text-xs font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 px-3 py-1.5 rounded-full transition"
               >
                 {loadingField === "summary" ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                صياغة بـ Gemini
+                {t.draft}
               </button>
             </div>
             <textarea
               rows={3}
-              placeholder="اكتب نبذة مختصرة أو كلمات مفتاحية وسيقوم Gemini بصياغتها..."
+              placeholder={t.summaryHint}
               value={resume.summary}
               onChange={(e) => setResume({ ...resume, summary: e.target.value })}
               className="w-full p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
@@ -303,7 +393,7 @@ export default function ResumeBuilder() {
           {/* الخبرات العملية */}
           <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
             <div className="flex items-center justify-between border-b pb-2">
-              <h2 className="font-bold text-base text-slate-800">الخبرات العملية</h2>
+              <h2 className="font-bold text-base text-slate-800">{t.experienceHeading}</h2>
               <button
                 onClick={() =>
                   setResume({
@@ -316,14 +406,14 @@ export default function ResumeBuilder() {
                 }
                 className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800"
               >
-                <Plus size={15} /> إضافة خبرة
+                <Plus size={15} /> {t.addExperience}
               </button>
             </div>
 
             {resume.experiences.map((exp, index) => (
               <div key={exp.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-slate-500">خبرة #{index + 1}</span>
+                  <span className="text-xs font-bold text-slate-500">{t.experience} #{index + 1}</span>
                   {resume.experiences.length > 1 && (
                     <button
                       onClick={() =>
@@ -342,7 +432,7 @@ export default function ResumeBuilder() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <input
                     type="text"
-                    placeholder="المسمى الوظيفي"
+                    placeholder={t.jobTitle}
                     value={exp.role}
                     onChange={(e) => {
                       const updated = [...resume.experiences];
@@ -353,7 +443,7 @@ export default function ResumeBuilder() {
                   />
                   <input
                     type="text"
-                    placeholder="اسم الشركة"
+                    placeholder={t.company}
                     value={exp.company}
                     onChange={(e) => {
                       const updated = [...resume.experiences];
@@ -364,7 +454,7 @@ export default function ResumeBuilder() {
                   />
                   <input
                     type="text"
-                    placeholder="الفترة (مثال: 2021 - 2024)"
+                    placeholder={t.period}
                     value={exp.period}
                     onChange={(e) => {
                       const updated = [...resume.experiences];
@@ -378,17 +468,17 @@ export default function ResumeBuilder() {
                 <div className="space-y-1.5">
                   <div className="flex justify-end">
                     <button
-                      onClick={() => enhanceWithAI(`${exp.role} في ${exp.company}: ${exp.description}`, "experience", exp.id)}
-                      disabled={loadingField === `exp-${exp.id}`}
+                      onClick={() => enhanceWithAI([exp.role, exp.company, exp.description].map(value => value.trim()).filter(Boolean).join(" - "), "experience", exp.id)}
+                      disabled={loadingField !== null}
                       className="flex items-center gap-1 text-xs font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 px-2.5 py-1 rounded-full transition"
                     >
                       {loadingField === `exp-${exp.id}` ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                      تحسين المهام بـ Gemini
+                      {t.improve}
                     </button>
                   </div>
                   <textarea
                     rows={3}
-                    placeholder="اكتب مهامك باختصار وسيحولها Gemini إلى نقاط إنجاز احترافية..."
+                    placeholder={t.descriptionHint}
                     value={exp.description}
                     onChange={(e) => {
                       const updated = [...resume.experiences];
@@ -404,12 +494,12 @@ export default function ResumeBuilder() {
 
           {/* التعليم والمهارات */}
           <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-            <h2 className="font-bold text-base text-slate-800 border-b pb-2">المؤهلات العلمية والمهارات</h2>
+            <h2 className="font-bold text-base text-slate-800 border-b pb-2">{t.educationSkills}</h2>
             {resume.education.map((edu, idx) => (
               <div key={edu.id} className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <input
                   type="text"
-                  placeholder="الدرجة العلمية"
+                  placeholder={t.degree}
                   value={edu.degree}
                   onChange={(e) => {
                     const updated = [...resume.education];
@@ -420,7 +510,7 @@ export default function ResumeBuilder() {
                 />
                 <input
                   type="text"
-                  placeholder="الجامعة / المؤسسة"
+                  placeholder={t.institution}
                   value={edu.institution}
                   onChange={(e) => {
                     const updated = [...resume.education];
@@ -431,7 +521,7 @@ export default function ResumeBuilder() {
                 />
                 <input
                   type="text"
-                  placeholder="سنة التخرج"
+                  placeholder={t.year}
                   value={edu.year}
                   onChange={(e) => {
                     const updated = [...resume.education];
@@ -444,7 +534,7 @@ export default function ResumeBuilder() {
             ))}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">المهارات (افصل بينها بفاصلة)</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">{t.skillsHint}</label>
               <input
                 type="text"
                 value={resume.skills}
@@ -456,8 +546,8 @@ export default function ResumeBuilder() {
         </div>
 
         {/* قسم المعاينة الحية A4 (يسار) */}
-        <div className="lg:col-span-6">
-          <div className="sticky top-24">
+        <div className="resume-preview-container lg:col-span-6">
+          <div className="resume-preview-sticky sticky top-24">
             <div
               id="resume-preview"
               dir={lang === "ar" ? "rtl" : "ltr"}
@@ -468,11 +558,12 @@ export default function ResumeBuilder() {
                 <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{resume.fullName}</h1>
                 <p className="text-blue-600 font-semibold text-base mt-1">{resume.jobTitle}</p>
                 <div className="flex flex-wrap justify-center gap-3 text-xs text-slate-500 mt-2">
-                  <span>{resume.email}</span>
-                  <span>•</span>
-                  <span dir="ltr">{resume.phone}</span>
-                  <span>•</span>
-                  <span>{resume.location}</span>
+                  {[resume.email, resume.phone, resume.location].map(value => value.trim()).filter(Boolean).map((value, index) => (
+                    <React.Fragment key={index}>
+                      {index > 0 && <span aria-hidden="true">•</span>}
+                      <span dir="auto">{value}</span>
+                    </React.Fragment>
+                  ))}
                 </div>
               </div>
 
@@ -492,7 +583,7 @@ export default function ResumeBuilder() {
                   {lang === "ar" ? "الخبرات العملية" : "Work Experience"}
                 </h3>
                 <div className="space-y-4">
-                  {resume.experiences.map((exp) => (
+                  {resume.experiences.filter(exp => [exp.role, exp.company, exp.period, exp.description].some(value => value.trim())).map((exp) => (
                     <div key={exp.id}>
                       <div className="flex justify-between items-baseline">
                         <h4 className="font-bold text-sm text-slate-900">
@@ -513,7 +604,7 @@ export default function ResumeBuilder() {
                 <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1 mb-2">
                   {lang === "ar" ? "المؤهلات العلمية" : "Education"}
                 </h3>
-                {resume.education.map((edu) => (
+                {resume.education.filter(edu => [edu.degree, edu.institution, edu.year].some(value => value.trim())).map((edu) => (
                   <div key={edu.id} className="flex justify-between text-sm">
                     <div>
                       <span className="font-bold text-slate-800">{edu.degree}</span>
@@ -531,7 +622,7 @@ export default function ResumeBuilder() {
                     {lang === "ar" ? "المهارات" : "Skills"}
                   </h3>
                   <div className="flex flex-wrap gap-1.5 mt-2">
-                    {resume.skills.split(",").map((skill, i) => (
+                    {resume.skills.split(/[,،]/).filter(skill => skill.trim()).map((skill, i) => (
                       <span
                         key={i}
                         className="bg-slate-100 text-slate-800 text-xs px-2.5 py-1 rounded font-medium border border-slate-200"
