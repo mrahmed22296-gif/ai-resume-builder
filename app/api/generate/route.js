@@ -13,7 +13,7 @@ export async function POST(req) {
       );
     }
 
-  const model = genAI.getGenerativeModel({
+const model = genAI.getGenerativeModel({
   model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
 });
 
