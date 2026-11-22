@@ -13,13 +13,15 @@ export async function POST(req) {
       );
     }
 
-const model = genAI.getGenerativeModel({
-  model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
-});
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
+    });
 
-    const langInstruction = language === "ar"
-      ? "اكتب النتيجة باللغة العربية الفصحى المهنية."
-      : "Write the result in professional corporate English.";
+    const langInstruction =
+      language === "ar"
+        ? "اكتب النتيجة باللغة العربية الفصحى المهنية."
+        : "Write the result in professional corporate English.";
 
     let systemPrompt = "";
     if (type === "summary") {
