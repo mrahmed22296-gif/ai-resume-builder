@@ -13,10 +13,7 @@ export async function POST(req) {
       );
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
-    });
+ const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });
 
     const langInstruction =
       language === "ar"
