@@ -9,7 +9,20 @@ const FALLBACK_MODELS = [
 
 export async function POST(req) {
   try {
-    const { prompt, type, language } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON request." }, { status: 400 });
+    }
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    }
+    const { prompt, type, language } = body;
+    if (typeof prompt !== "string" || !prompt.trim() || prompt.length > 5000 ||
+        !["summary", "experience"].includes(type) || !["ar", "en"].includes(language)) {
+      return NextResponse.json({ error: "Provide a prompt of 1-5000 characters, a supported type and language." }, { status: 400 });
+    }
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -41,6 +54,9 @@ export async function POST(req) {
         const response = await result.response;
         const text = response.text();
 
+        if (typeof text !== "string" || !text.trim()) {
+          return NextResponse.json({ error: "AI returned no text. Please try again." }, { status: 502 });
+        }
         return NextResponse.json({ result: text.trim() });
       } catch (err) {
         lastError = err;
@@ -55,9 +71,9 @@ export async function POST(req) {
 
     throw lastError;
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("AI generation failed.");
     return NextResponse.json(
-      { error: error?.message || "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي." },
+      { error: "AI generation is temporarily unavailable. Please try again later." },
       { status: 500 }
     );
   }
