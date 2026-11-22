@@ -16,8 +16,8 @@ export async function POST(req) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const langInstruction = language === "ar" 
-      ? "اكتب النتيجة باللغة العربية الفصحى المهنية." 
+    const langInstruction = language === "ar"
+      ? "اكتب النتيجة باللغة العربية الفصحى المهنية."
       : "Write the result in professional corporate English.";
 
     let systemPrompt = "";
@@ -35,7 +35,7 @@ export async function POST(req) {
   } catch (error) {
     console.error("Gemini API Error:", error);
     return NextResponse.json(
-      { error: "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي." },
+      { error: error?.message || "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي." },
       { status: 500 }
     );
   }
