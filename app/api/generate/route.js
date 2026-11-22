@@ -47,10 +47,11 @@ export async function POST(req) {
     const genAI = new GoogleGenerativeAI(apiKey);
     let lastError = null;
 
+    const signal = AbortSignal.timeout(20000);
     for (const modelName of FALLBACK_MODELS) {
       try {
         const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(systemPrompt);
+        const result = await model.generateContent(systemPrompt, { signal });
         const response = await result.response;
         const text = response.text();
 
