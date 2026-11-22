@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Sparkles, Download, FileText, Plus, Trash2, Globe, Loader2 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
 import { saveAs } from "file-saver";
@@ -8,6 +8,7 @@ import { saveAs } from "file-saver";
 export default function ResumeBuilder() {
   const [lang, setLang] = useState("ar");
   const [loadingField, setLoadingField] = useState(null);
+  const aiRequestInFlight = useRef(false);
 
  const [resume, setResume] = useState({
     fullName: "",
@@ -37,34 +38,39 @@ export default function ResumeBuilder() {
   });
   // استدعاء Gemini AI لتحسين النصوص
   const enhanceWithAI = async (text, type, expId = null) => {
-    if (!text.trim()) return alert("يرجى كتابة بعض الكلمات أو المسمى الوظيفي أولاً ليتمكن الذكاء الاصطناعي من صياغته.");
-    
-    const loadKey = expId ? `exp-${expId}` : type;
-    setLoadingField(loadKey);
+    const isArabic = lang === "ar";
+    if (!text.trim()) {
+      alert(isArabic ? "اكتب المسمى الوظيفي أو وصفاً مختصراً أولاً." : "Enter a job title or a short description first.");
+      return;
+    }
+    if (aiRequestInFlight.current) return;
+    aiRequestInFlight.current = true;
+    setLoadingField(expId !== null ? `exp-${expId}` : type);
 
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: text, type, language: lang })
+        body: JSON.stringify({ prompt: text.trim(), type, language: lang })
       });
       const data = await res.json();
-
-      if (data.error) {
-        alert(data.error);
-      } else if (type === "summary") {
-        setResume({ ...resume, summary: data.result });
-      } else if (type === "experience" && expId) {
-        setResume({
-          ...resume,
-          experiences: resume.experiences.map((exp) =>
-            exp.id === expId ? { ...exp, description: data.result } : exp
-          )
-        });
+      if (!res.ok || typeof data.result !== "string" || !data.result.trim()) {
+        throw new Error("Invalid AI response");
       }
-    } catch (err) {
-      alert("فشل الاتصال بالخادم.");
+      const result = data.result.trim();
+      setResume(current => {
+        if (type === "summary") return { ...current, summary: result };
+        if (type === "experience" && expId !== null) {
+          return { ...current, experiences: current.experiences.map(exp =>
+            exp.id === expId ? { ...exp, description: result } : exp
+          ) };
+        }
+        return current;
+      });
+    } catch {
+      alert(isArabic ? "تعذّر إنشاء النص. حاول مرة أخرى لاحقاً، بياناتك لم تتغير." : "Could not generate text. Try again later. Your data has not changed.");
     } finally {
+      aiRequestInFlight.current = false;
       setLoadingField(null);
     }
   };
@@ -283,8 +289,8 @@ export default function ResumeBuilder() {
             <div className="flex items-center justify-between border-b pb-2">
               <h2 className="font-bold text-base text-slate-800">النبذة المهنية</h2>
               <button
-                onClick={() => enhanceWithAI(`${resume.jobTitle} - ${resume.summary}`, "summary")}
-                disabled={loadingField === "summary"}
+                onClick={() => enhanceWithAI([resume.jobTitle, resume.summary].map(value => value.trim()).filter(Boolean).join(" - "), "summary")}
+                disabled={loadingField !== null}
                 className="flex items-center gap-1.5 text-xs font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 px-3 py-1.5 rounded-full transition"
               >
                 {loadingField === "summary" ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
@@ -378,8 +384,8 @@ export default function ResumeBuilder() {
                 <div className="space-y-1.5">
                   <div className="flex justify-end">
                     <button
-                      onClick={() => enhanceWithAI(`${exp.role} في ${exp.company}: ${exp.description}`, "experience", exp.id)}
-                      disabled={loadingField === `exp-${exp.id}`}
+                      onClick={() => enhanceWithAI([exp.role, exp.company, exp.description].map(value => value.trim()).filter(Boolean).join(" - "), "experience", exp.id)}
+                      disabled={loadingField !== null}
                       className="flex items-center gap-1 text-xs font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 px-2.5 py-1 rounded-full transition"
                     >
                       {loadingField === `exp-${exp.id}` ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
@@ -549,4 +555,4 @@ export default function ResumeBuilder() {
       </main>
     </div>
   );
-}
+                  }
