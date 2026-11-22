@@ -3,24 +3,22 @@
 @tailwind utilities;
 
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  #resume-preview, #resume-preview * {
-    visibility: visible;
-  }
+  @page { size: A4; margin: 14mm; }
+  html, body { margin: 0; padding: 0; background: white !important; }
+  .resume-builder { display: block !important; min-height: 0 !important; }
+  .resume-app-header, .resume-editor { display: none !important; }
+  .resume-main { display: block !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .resume-preview-container { width: 100% !important; }
+  .resume-preview-sticky { position: static !important; }
   #resume-preview {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 20px;
+    position: static !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
     box-shadow: none !important;
     border: none !important;
   }
-  @page {
-    size: A4;
-    margin: 0;
-  }
+  #resume-preview h1, #resume-preview h3, #resume-preview h4 { break-after: avoid; }
+  #resume-preview p { orphans: 2; widows: 2; }
 }
