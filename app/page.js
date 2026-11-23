@@ -8,6 +8,12 @@ import { generationErrorMessage } from "./generation-errors.mjs";
 
 export default function ResumeBuilder() {
   const [lang, setLang] = useState("ar");
+  const [template, setTemplate] = useState("classic");
+  const templateThemes = {
+    classic: { ink: "0F172A", accent: "2563EB", centered: true, font: "Arial" },
+    modern: { ink: "123C46", accent: "087F8C", centered: false, font: "Arial" },
+    executive: { ink: "292536", accent: "6D597A", centered: true, font: "Georgia" }
+  };
   const [loadingField, setLoadingField] = useState(null);
   const aiRequestInFlight = useRef(false);
   const generatedFields = useRef(new Set());
@@ -227,27 +233,30 @@ export default function ResumeBuilder() {
   const exportToWord = async () => {
     const isRtl = lang === "ar";
     const align = AlignmentType.START;
+    const theme = templateThemes[template];
+    const headerAlign = theme.centered ? AlignmentType.CENTER : (isRtl ? AlignmentType.RIGHT : AlignmentType.LEFT);
 
     const doc = new Document({
+      styles: { default: { document: { run: { font: theme.font } } } },
       sections: [
         {
           properties: {},
           children: [
             new Paragraph({
-              alignment: AlignmentType.CENTER,
+              alignment: headerAlign,
               children: [
-                new TextRun({ text: resume.fullName, bold: true, size: 36, color: "1E293B" })
+                new TextRun({ text: resume.fullName, bold: true, size: 36, color: theme.ink })
               ]
             }),
             new Paragraph({
-              alignment: AlignmentType.CENTER,
+              alignment: headerAlign,
               spacing: { after: 100 },
               children: [
-                new TextRun({ text: resume.jobTitle, size: 24, color: "2563EB" })
+                new TextRun({ text: resume.jobTitle, size: 24, color: theme.accent })
               ]
             }),
             new Paragraph({
-              alignment: AlignmentType.CENTER,
+              alignment: headerAlign,
               spacing: { after: 300 },
               children: [
                 new TextRun({ text: [resume.email, resume.phone, resume.location].map(value => value.trim()).filter(Boolean).join("  |  "), size: 20, color: "64748B" })
@@ -259,7 +268,7 @@ export default function ResumeBuilder() {
               heading: HeadingLevel.HEADING_2,
               alignment: align,
               bidirectional: isRtl,
-              children: [new TextRun({ text: isRtl ? "النبذة المهنية" : "Professional Summary", bold: true, size: 26, color: "0F172A" })]
+              children: [new TextRun({ text: isRtl ? "النبذة المهنية" : "Professional Summary", bold: true, size: 26, color: theme.ink })]
             }),
             new Paragraph({
               alignment: align,
@@ -273,7 +282,7 @@ export default function ResumeBuilder() {
               heading: HeadingLevel.HEADING_2,
               alignment: align,
               bidirectional: isRtl,
-              children: [new TextRun({ text: isRtl ? "الخبرات العملية" : "Work Experience", bold: true, size: 26, color: "0F172A" })]
+              children: [new TextRun({ text: isRtl ? "الخبرات العملية" : "Work Experience", bold: true, size: 26, color: theme.ink })]
             }),
             ...resume.experiences.filter(exp => [exp.role, exp.company, exp.period, exp.description].some(value => value.trim())).flatMap((exp) => [
               new Paragraph({
@@ -302,7 +311,7 @@ export default function ResumeBuilder() {
               alignment: align,
               bidirectional: isRtl,
               spacing: { before: 200 },
-              children: [new TextRun({ text: isRtl ? "المؤهلات العلمية" : "Education", bold: true, size: 26, color: "0F172A" })]
+              children: [new TextRun({ text: isRtl ? "المؤهلات العلمية" : "Education", bold: true, size: 26, color: theme.ink })]
             }),
             ...resume.education.filter(edu => [edu.degree, edu.institution, edu.year].some(value => value.trim())).map(
               (edu) =>
@@ -322,7 +331,7 @@ export default function ResumeBuilder() {
               alignment: align,
               bidirectional: isRtl,
               spacing: { before: 200 },
-              children: [new TextRun({ text: isRtl ? "المهارات" : "Skills", bold: true, size: 26, color: "0F172A" })]
+              children: [new TextRun({ text: isRtl ? "المهارات" : "Skills", bold: true, size: 26, color: theme.ink })]
             }),
             new Paragraph({
               alignment: align,
@@ -624,14 +633,31 @@ export default function ResumeBuilder() {
 
         {/* قسم المعاينة الحية A4 (يسار) */}
         <div className="resume-preview-container lg:col-span-6">
+          <section className="resume-template-picker bg-white border border-slate-200 rounded-2xl p-4 mb-5" aria-label={lang === "ar" ? "تصميم السيرة الذاتية" : "Resume design"}>
+            <h2 className="font-bold text-sm text-slate-800 mb-3">{lang === "ar" ? "اختر تصميم السيرة الذاتية" : "Choose your resume design"}</h2>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: "classic", ar: "كلاسيكي", en: "Classic", color: "#2563eb" },
+                { id: "modern", ar: "عصري", en: "Modern", color: "#087f8c" },
+                { id: "executive", ar: "تنفيذي", en: "Executive", color: "#6d597a" }
+              ].map(item => (
+                <button key={item.id} type="button" aria-pressed={template === item.id} onClick={() => setTemplate(item.id)}
+                  className={`rounded-xl border-2 p-2 text-xs font-semibold transition ${template === item.id ? "border-blue-500 bg-blue-50 text-blue-800" : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"}`}>
+                  <span aria-hidden="true" className={`template-thumbnail template-thumbnail-${item.id}`} style={{ "--template-color": item.color }}><i /><i /><i /><i /></span>
+                  {lang === "ar" ? item.ar : item.en}
+                </button>
+              ))}
+            </div>
+          </section>
           <div className="resume-preview-sticky sticky top-24">
             <div
               id="resume-preview"
+              data-template={template}
               dir={lang === "ar" ? "rtl" : "ltr"}
               className="bg-white shadow-2xl rounded-lg ring-1 ring-black/20 p-10 min-h-[842px] text-slate-800"
             >
               {/* رأس السيرة الذاتية */}
-              <div className="border-b-2 border-slate-800 pb-4 mb-6 text-center">
+              <div className="resume-document-header border-b-2 border-slate-800 pb-4 mb-6 text-center">
                 <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{resume.fullName}</h1>
                 <p className="text-blue-600 font-semibold text-base mt-1">{resume.jobTitle}</p>
                 <div className="flex flex-wrap justify-center gap-3 text-xs text-slate-500 mt-2">
@@ -717,4 +743,4 @@ export default function ResumeBuilder() {
       </main>
     </div>
   );
-                    }
+                  }
