@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Sparkles, Download, FileText, Plus, Trash2, Globe, Loader2 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
 import { saveAs } from "file-saver";
+import { generationErrorMessage } from "./generation-errors.mjs";
 
 export default function ResumeBuilder() {
   const [lang, setLang] = useState("ar");
@@ -126,7 +127,9 @@ export default function ResumeBuilder() {
       });
       const data = await res.json();
       if (!res.ok || typeof data.result !== "string" || !data.result.trim()) {
-        throw new Error("Invalid AI response");
+        const error = new Error("Invalid AI response");
+        error.code = data?.code;
+        throw error;
       }
       const result = data.result.trim();
       const latest = latestForm.current;
@@ -150,8 +153,8 @@ export default function ResumeBuilder() {
         }
         return current;
       });
-    } catch {
-      alert(isArabic ? "تعذّر إنشاء النص. حاول مرة أخرى لاحقاً، بياناتك لم تتغير." : "Could not generate text. Try again later. Your data has not changed.");
+    } catch (error) {
+      alert(generationErrorMessage(error?.name === "AbortError" ? "AI_TIMEOUT" : error?.code, latestForm.current.lang));
     } finally {
       clearTimeout(timeout);
       aiRequestInFlight.current = false;
