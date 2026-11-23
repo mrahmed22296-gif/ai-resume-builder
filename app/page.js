@@ -117,7 +117,7 @@ export default function ResumeBuilder() {
     const requestLanguage = lang;
     const requestPrompt = text.trim();
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000);
+    const timeout = setTimeout(() => controller.abort(), 65000);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -643,4 +643,4 @@ export default function ResumeBuilder() {
       </main>
     </div>
   );
-}
+                  }
