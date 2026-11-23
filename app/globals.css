@@ -75,3 +75,10 @@ body::before {
 #resume-preview[data-template="executive"] .resume-document-header > p { color: #6d597a; }
 #resume-preview[data-template="executive"] h3 { color: #292536; border-bottom: 1px solid #6d597a; letter-spacing: 0.12em; }
 @media print { .resume-template-picker { display: none !important; } #resume-preview { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+
+/* ===== Site footer (shared, print-hidden) ===== */
+.site-contact-footer { padding: 24px 20px; border-top: 1px solid #d8ddd7; background: #fff; color: #334155; text-align: center; font-family: inherit; font-size: 14px; line-height: 1.8; }
+.site-contact-credit { margin: 0 0 8px; font-weight: 700; }
+.site-contact-links { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px 20px; }
+.site-contact-links a { color: #2563eb; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+@media print { .site-contact-footer { display: none !important; } }
