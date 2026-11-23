@@ -33,6 +33,8 @@ export default function ResumeBuilder() {
     "improve": "تحسين المهام بـ Gemini",
     "descriptionHint": "اكتب مهامك باختصار وسيحولها Gemini إلى نقاط إنجاز احترافية...",
     "educationSkills": "المؤهلات العلمية والمهارات",
+    "addEducation": "إضافة مؤهل علمي",
+    "removeEducation": "حذف المؤهل",
     "degree": "الدرجة العلمية",
     "institution": "الجامعة / المؤسسة",
     "year": "سنة التخرج",
@@ -59,6 +61,8 @@ export default function ResumeBuilder() {
     "improve": "Improve with Gemini",
     "descriptionHint": "Describe your duties for Gemini to turn into professional achievement points...",
     "educationSkills": "Education and skills",
+    "addEducation": "Add educational qualification",
+    "removeEducation": "Remove qualification",
     "degree": "Degree",
     "institution": "University / Institution",
     "year": "Graduation year",
@@ -555,9 +559,20 @@ export default function ResumeBuilder() {
 
           {/* التعليم والمهارات */}
           <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 space-y-4">
-            <h2 className="font-bold text-base text-slate-800 border-b border-slate-200 pb-2">{t.educationSkills}</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+              <h2 className="font-bold text-base text-slate-800">{t.educationSkills}</h2>
+              <button onClick={() => setResume(current => ({ ...current, education: [...current.education, { id: crypto.randomUUID(), degree: "", institution: "", year: "" }] }))}
+                className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">
+                <Plus size={15} /> {t.addEducation}
+              </button>
+            </div>
             {resume.education.map((edu, idx) => (
-              <div key={edu.id} className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div key={edu.id} className="border border-slate-200 rounded-xl p-3 space-y-2">
+                <div className="flex justify-end">
+                  <button aria-label={t.removeEducation} onClick={() => setResume(current => ({ ...current, education: current.education.filter(item => item.id !== edu.id) }))}
+                    className="text-slate-400 hover:text-red-500 p-1"><Trash2 size={14} /></button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <input
                   type="text"
                   placeholder={t.degree}
@@ -591,6 +606,7 @@ export default function ResumeBuilder() {
                   }}
                   className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
                 />
+                </div>
               </div>
             ))}
 
@@ -701,4 +717,4 @@ export default function ResumeBuilder() {
       </main>
     </div>
   );
-                  }
+                    }
