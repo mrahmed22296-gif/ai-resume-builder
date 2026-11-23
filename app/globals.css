@@ -30,6 +30,12 @@ body::before {
   color: #172554;
 }
 
+@media screen and (max-width: 1023px) {
+  .resume-preview-container { min-width: 0; width: 100%; }
+  .resume-preview-sticky { position: static; }
+  #resume-preview { width: 100%; padding: 24px; overflow-wrap: anywhere; }
+}
+
 @media print {
   @page { size: A4; margin: 14mm; }
   html, body { margin: 0; padding: 0; background: white !important; }
