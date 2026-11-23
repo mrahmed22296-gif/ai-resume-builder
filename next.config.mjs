@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // firebase-admin must load from node_modules at runtime; bundling it
+  // rewrites jwks-rsa's dynamic jose import into require() and breaks
+  // ID-token verification (ERR_REQUIRE_ESM) on the serverless runtime.
+  experimental: {
+    serverComponentsExternalPackages: ["firebase-admin"],
+  },
   async rewrites() {
     return [
       // Same-site proxy for the Firebase auth handler. Lets the app use its
