@@ -762,6 +762,16 @@ export default function ResumeBuilder() {
 
       </main>
 
+      {/* Owner attribution/contact footer (coordinated patch from repair task); never printed or exported. */}
+      <footer className="site-contact-footer" aria-label="التواصل">
+        <p className="site-contact-credit">من تصميم وإعداد احمد عبدالكريم</p>
+        <div className="site-contact-links" dir="ltr">
+          <a href="mailto:mr.ahmed22296@gmail.com">mr.ahmed22296@gmail.com</a>
+          <a href="tel:60085043">60085043</a>
+          <a href="tel:01201487209">01201487209</a>
+        </div>
+      </footer>
+
       {access.enabled && access.paywallOpen ? (
         <PaywallModal
           lang={lang}
