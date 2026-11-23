@@ -359,7 +359,7 @@ export default function ResumeBuilder() {
       {/* الشريط العلوي */}
       <header className="resume-app-header bg-white/90 backdrop-blur-xl border-b border-slate-200 px-4 sm:px-6 py-4 sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-blue-500 to-violet-500 text-white p-2 rounded-xl shadow-lg shadow-blue-500/15">
+          <div className="bg-gradient-to-br from-sky-500 to-[#1e3a8a] text-white p-2 rounded-xl shadow-lg shadow-sky-500/15">
             <Sparkles size={22} />
           </div>
           <div>
@@ -398,7 +398,7 @@ export default function ResumeBuilder() {
 
           <button
             onClick={exportToWord}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-xl transition"
           >
             <FileText size={16} />
             {t.downloadWord}
@@ -406,7 +406,7 @@ export default function ResumeBuilder() {
 
           <button
             onClick={exportToPDF}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/15 transition"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-br from-sky-500 to-sky-700 hover:from-sky-600 hover:to-sky-800 rounded-xl shadow-lg shadow-sky-500/15 transition"
           >
             <Download size={16} />
             {t.downloadPdf}
@@ -429,35 +429,35 @@ export default function ResumeBuilder() {
                 placeholder={t.fullName}
                 value={resume.fullName}
                 onChange={(e) => setResume({ ...resume, fullName: e.target.value })}
-                className="p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                className="p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
               />
               <input
                 type="text"
                 placeholder={t.jobTitle}
                 value={resume.jobTitle}
                 onChange={(e) => setResume({ ...resume, jobTitle: e.target.value })}
-                className="p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                className="p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
               />
               <input
                 type="email"
                 placeholder={t.email}
                 value={resume.email}
                 onChange={(e) => setResume({ ...resume, email: e.target.value })}
-                className="p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                className="p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
               />
               <input
                 type="text"
                 placeholder={t.phone}
                 value={resume.phone}
                 onChange={(e) => setResume({ ...resume, phone: e.target.value })}
-                className="p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                className="p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
               />
               <input
                 type="text"
                 placeholder={t.location}
                 value={resume.location}
                 onChange={(e) => setResume({ ...resume, location: e.target.value })}
-                className="p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm md:col-span-2 focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                className="p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm md:col-span-2 focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
               />
             </div>
           </section>
@@ -469,7 +469,7 @@ export default function ResumeBuilder() {
               <button
                 onClick={() => enhanceWithAI([resume.jobTitle, resume.summary].map(value => value.trim()).filter(Boolean).join(" - "), "summary")}
                 disabled={loadingField !== null}
-                className="flex items-center gap-1.5 text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 text-xs font-semibold bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 px-3 py-1.5 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loadingField === "summary" ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
                 {t.draft}
@@ -480,7 +480,7 @@ export default function ResumeBuilder() {
               placeholder={t.summaryHint}
               value={resume.summary}
               onChange={(e) => setResume({ ...resume, summary: e.target.value })}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
             />
           </section>
 
@@ -498,7 +498,7 @@ export default function ResumeBuilder() {
                     ]
                   })
                 }
-                className="flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-amber-200 transition"
+                className="flex items-center gap-1 text-xs font-semibold text-sky-700 hover:text-amber-200 transition"
               >
                 <Plus size={15} /> {t.addExperience}
               </button>
@@ -533,7 +533,7 @@ export default function ResumeBuilder() {
                       updated[index].role = e.target.value;
                       setResume({ ...resume, experiences: updated });
                     }}
-                    className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                    className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
                   />
                   <input
                     type="text"
@@ -544,7 +544,7 @@ export default function ResumeBuilder() {
                       updated[index].company = e.target.value;
                       setResume({ ...resume, experiences: updated });
                     }}
-                    className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                    className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
                   />
                   <input
                     type="text"
@@ -555,7 +555,7 @@ export default function ResumeBuilder() {
                       updated[index].period = e.target.value;
                       setResume({ ...resume, experiences: updated });
                     }}
-                    className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                    className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
                   />
                 </div>
 
@@ -564,7 +564,7 @@ export default function ResumeBuilder() {
                     <button
                       onClick={() => enhanceWithAI([exp.role, exp.company, exp.description].map(value => value.trim()).filter(Boolean).join(" - "), "experience", exp.id)}
                       disabled={loadingField !== null}
-                      className="flex items-center gap-1 text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center gap-1 text-xs font-semibold bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 px-2.5 py-1 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loadingField === `exp-${exp.id}` ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
                       {t.improve}
@@ -579,7 +579,7 @@ export default function ResumeBuilder() {
                       updated[index].description = e.target.value;
                       setResume({ ...resume, experiences: updated });
                     }}
-                    className="w-full p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                    className="w-full p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
                   />
                 </div>
               </div>
@@ -591,7 +591,7 @@ export default function ResumeBuilder() {
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
               <h2 className="font-bold text-base text-slate-800">{t.educationSkills}</h2>
               <button onClick={() => setResume(current => ({ ...current, education: [...current.education, { id: crypto.randomUUID(), degree: "", institution: "", year: "" }] }))}
-                className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">
+                className="flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-800">
                 <Plus size={15} /> {t.addEducation}
               </button>
             </div>
@@ -611,7 +611,7 @@ export default function ResumeBuilder() {
                     updated[idx].degree = e.target.value;
                     setResume({ ...resume, education: updated });
                   }}
-                  className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                  className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
                 />
                 <input
                   type="text"
@@ -622,7 +622,7 @@ export default function ResumeBuilder() {
                     updated[idx].institution = e.target.value;
                     setResume({ ...resume, education: updated });
                   }}
-                  className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                  className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
                 />
                 <input
                   type="text"
@@ -633,7 +633,7 @@ export default function ResumeBuilder() {
                     updated[idx].year = e.target.value;
                     setResume({ ...resume, education: updated });
                   }}
-                  className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                  className="p-2 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-lg text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
                 />
                 </div>
               </div>
@@ -645,7 +645,7 @@ export default function ResumeBuilder() {
                 type="text"
                 value={resume.skills}
                 onChange={(e) => setResume({ ...resume, skills: e.target.value })}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none transition"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-zinc-500 rounded-xl text-sm focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none transition"
               />
             </div>
           </section>
@@ -662,7 +662,7 @@ export default function ResumeBuilder() {
                 { id: "executive", ar: "تنفيذي", en: "Executive", color: "#6d597a" }
               ].map(item => (
                 <button key={item.id} type="button" aria-pressed={template === item.id} onClick={() => setTemplate(item.id)}
-                  className={`rounded-xl border-2 p-2 text-xs font-semibold transition ${template === item.id ? "border-blue-500 bg-blue-50 text-blue-800" : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"}`}>
+                  className={`rounded-xl border-2 p-2 text-xs font-semibold transition ${template === item.id ? "border-sky-500 bg-sky-50 text-sky-800" : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"}`}>
                   <span aria-hidden="true" className={`template-thumbnail template-thumbnail-${item.id}`} style={{ "--template-color": item.color }}><i /><i /><i /><i /></span>
                   {lang === "ar" ? item.ar : item.en}
                 </button>
@@ -679,7 +679,7 @@ export default function ResumeBuilder() {
               {/* رأس السيرة الذاتية */}
               <div className="resume-document-header border-b-2 border-slate-800 pb-4 mb-6 text-center">
                 <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{resume.fullName}</h1>
-                <p className="text-blue-600 font-semibold text-base mt-1">{resume.jobTitle}</p>
+                <p className="text-sky-600 font-semibold text-base mt-1">{resume.jobTitle}</p>
                 <div className="flex flex-wrap justify-center gap-3 text-xs text-slate-500 mt-2">
                   {[resume.email, resume.phone, resume.location].map(value => value.trim()).filter(Boolean).map((value, index) => (
                     <React.Fragment key={index}>

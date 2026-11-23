@@ -1,16 +1,11 @@
 import "./globals.css";
-import { Inter, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { Tajawal } from "next/font/google";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const plexArabic = IBM_Plex_Sans_Arabic({
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-arabic",
+// Unified site design: Tajawal everywhere, matching the end-of-service calculator.
+const tajawal = Tajawal({
+  subsets: ["latin", "arabic"],
+  weight: ["400", "500", "700", "900"],
+  variable: "--font-tajawal",
   display: "swap",
 });
 
@@ -21,8 +16,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ar" dir="rtl" className={`${inter.variable} ${plexArabic.variable}`}>
-      <body className="bg-[#f5f7fc] text-slate-800 antialiased">
+    <html lang="ar" dir="rtl" className={tajawal.variable}>
+      <body className="bg-[#f0f9ff] text-slate-800 antialiased">
         {children}
       </body>
     </html>

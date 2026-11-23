@@ -106,7 +106,7 @@ export function PaywallModal({ lang, user, onClose, onRedeem }) {
           placeholder={t.codePlaceholder}
           autoComplete="off"
           autoCapitalize="characters"
-          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-base tracking-widest focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 outline-none"
+          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-base tracking-widest focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400 outline-none"
           dir="ltr"
         />
         {error ? <p className="text-xs font-bold text-red-600">{error}</p> : null}
@@ -114,7 +114,7 @@ export function PaywallModal({ lang, user, onClose, onRedeem }) {
           type="button"
           onClick={submit}
           disabled={busy}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl py-3 text-sm font-bold transition flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-br from-sky-500 to-sky-700 hover:from-sky-600 hover:to-sky-800 disabled:opacity-50 text-white rounded-xl py-3 text-sm font-bold transition flex items-center justify-center gap-2"
         >
           {busy ? <Loader2 size={16} className="animate-spin" /> : null}
           {busy ? t.activating : t.activate}
@@ -138,7 +138,7 @@ export function SignInPrompt({ lang, onSignIn, onSignInRedirect, onClose }) {
         <button
           type="button"
           onClick={onSignIn}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 text-sm font-bold transition"
+          className="w-full bg-gradient-to-br from-sky-500 to-sky-700 hover:from-sky-600 hover:to-sky-800 text-white rounded-xl py-3 text-sm font-bold transition"
         >
           {isArabic ? "تسجيل الدخول بحساب Google" : "Sign in with Google"}
         </button>
