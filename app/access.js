@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getApps, initializeApp } from "firebase/app";
-import { getAuth, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut } from "firebase/auth";
 
 // Client access layer for the server-enforced paywall. Everything here is a
 // no-op pass-through unless NEXT_PUBLIC_PAYWALL_ENABLED=true, so the app
@@ -58,21 +58,6 @@ export function useResumeAccess() {
   useEffect(() => {
     if (!PAYWALL_ENABLED) return undefined;
     const auth = getFirebaseAuth();
-    // Complete a redirect-flow sign-in if the page was just returned to from
-    // Google's consent screen. No-op on a normal load.
-    getRedirectResult(auth)
-      .then(result => {
-        if (typeof window !== "undefined") {
-          window.__redirectResult = result && result.user
-            ? { ok: true, uid: result.user.uid, email: result.user.email }
-            : { ok: true, user: null };
-        }
-      })
-      .catch(error => {
-        if (typeof window !== "undefined") {
-          window.__redirectResult = { ok: false, code: error?.code || "unknown", message: String(error?.message || error).slice(0, 300) };
-        }
-      });
     return onAuthStateChanged(auth, current => {
       setUser(current);
       setAuthReady(true);
