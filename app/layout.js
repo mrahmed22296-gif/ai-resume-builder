@@ -22,7 +22,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl" className={`${inter.variable} ${plexArabic.variable}`}>
-      <body className="bg-[#0a0a0c] text-zinc-200 antialiased">
+      <body className="bg-[#f5f7fc] text-slate-800 antialiased">
         {children}
       </body>
     </html>
