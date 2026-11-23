@@ -12,7 +12,12 @@ export const PAYWALL_ENABLED = process.env.NEXT_PUBLIC_PAYWALL_ENABLED === "true
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  // Serve the auth handler from our own host (see next.config.mjs rewrites)
+  // so sign-in state is first-party and survives storage partitioning.
+  authDomain:
+    typeof window !== "undefined" && window.location.hostname.endsWith("vercel.app")
+      ? window.location.host
+      : process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
