@@ -55,7 +55,19 @@ export function useResumeAccess() {
     const auth = getFirebaseAuth();
     // Complete a redirect-flow sign-in if the page was just returned to from
     // Google's consent screen. No-op on a normal load.
-    getRedirectResult(auth).catch(() => {});
+    getRedirectResult(auth)
+      .then(result => {
+        if (typeof window !== "undefined") {
+          window.__redirectResult = result && result.user
+            ? { ok: true, uid: result.user.uid, email: result.user.email }
+            : { ok: true, user: null };
+        }
+      })
+      .catch(error => {
+        if (typeof window !== "undefined") {
+          window.__redirectResult = { ok: false, code: error?.code || "unknown", message: String(error?.message || error).slice(0, 300) };
+        }
+      });
     return onAuthStateChanged(auth, current => {
       setUser(current);
       setAuthReady(true);
