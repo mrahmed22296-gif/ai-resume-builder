@@ -21,6 +21,9 @@ export async function generateResumeText({ prompt, type, language }, {
   const task = type === "summary"
     ? "Write a concise professional resume summary in 3-4 lines, without introduction or markdown."
     : "Rewrite the supplied job description as 3-4 resume bullet points beginning with action verbs. Use the bullet character •. Keep only supported facts.";
+  const started = Date.now();
+  const diagnostic = stage => console.info("AI request stage.", { stage, elapsedMs: Date.now() - started, model, runtime: process.versions.node.split(".")[0] });
+  diagnostic("request_started");
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -38,8 +41,10 @@ export async function generateResumeText({ prompt, type, language }, {
         })
       }
     );
+    diagnostic("response_headers");
     let data;
     try { data = await response.json(); } catch { return failure("AI_UNAVAILABLE", 502); }
+    diagnostic("response_parsed");
     if (!response.ok) {
       const reason = Array.isArray(data?.error?.details)
         ? data.error.details.map(detail => detail?.reason).find(value => ALLOWED_REASONS.has(value)) || "unclassified"
@@ -59,6 +64,7 @@ export async function generateResumeText({ prompt, type, language }, {
     if (!text || text.length > 20000) return failure("AI_INCOMPLETE", 502);
     return { result: text, status: 200 };
   } catch (error) {
+    diagnostic("failure");
     const timedOut = controller.signal.aborted || error?.name === "AbortError" || error?.name === "TimeoutError";
     log("AI generation failed.", { category: timedOut ? "timeout" : "network_error" });
     return failure(timedOut ? "AI_TIMEOUT" : "AI_UNAVAILABLE", timedOut ? 504 : 502);
