@@ -19,11 +19,17 @@ async function authorizeRequest(req, body) {
   if (typeof body.requestId !== "string" || !/^[A-Za-z0-9-]{8,64}$/.test(body.requestId)) {
     return { error: json({ error: "Invalid request.", code: "INVALID_REQUEST" }, 400) };
   }
-  const { verifyFirebaseIdToken, getFirestoreStore } = await import("./firestore-store.mjs");
+  const { verifyFirebaseIdToken, getFirestoreStore, AdminInitError } = await import("./firestore-store.mjs");
   let uid;
   try {
     uid = await verifyFirebaseIdToken(token);
-  } catch {
+  } catch (error) {
+    // Admin/secret misconfiguration is an operator problem, not an auth
+    // rejection: surface it distinctly so it is never mistaken for a bad
+    // sign-in and never silently consumes anything.
+    if (error instanceof AdminInitError) {
+      return { error: json({ error: "Access control is temporarily unavailable. No attempt was used.", code: "ACCESS_UNAVAILABLE" }, 503) };
+    }
     return { error: json({ error: "Sign in required.", code: "NO_AUTH" }, 401) };
   }
   const chargeable = body.type !== "translation" || TRANSLATION_CONSUMES_ATTEMPT;

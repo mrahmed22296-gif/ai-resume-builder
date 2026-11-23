@@ -8,17 +8,33 @@
 //   ACTIVATION_CODE_SALT           random >= 32 chars, generated once at setup.
 //   OWNER_UID                      the owner's Firebase Auth uid (code issuance).
 
+export class AdminInitError extends Error {}
+
 let appPromise;
 
 async function getAdminApp() {
   if (!appPromise) {
     appPromise = (async () => {
-      const { getApps, initializeApp, cert } = await import("firebase-admin/app");
-      const existing = getApps();
-      if (existing.length) return existing[0];
-      const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON || "";
-      if (!raw.trim()) throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON is not configured");
-      return initializeApp({ credential: cert(JSON.parse(raw)) });
+      try {
+        const { getApps, initializeApp, cert } = await import("firebase-admin/app");
+        const existing = getApps();
+        if (existing.length) return existing[0];
+        const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON || "";
+        if (!raw.trim()) throw new AdminInitError("FIREBASE_SERVICE_ACCOUNT_JSON is not configured");
+        let parsed;
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          throw new AdminInitError("FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON");
+        }
+        return initializeApp({ credential: cert(parsed) });
+      } catch (error) {
+        // Never cache a failed init: a fixed env var must take effect on the
+        // next request without a function restart.
+        appPromise = undefined;
+        if (error instanceof AdminInitError) throw error;
+        throw new AdminInitError("Firebase admin initialization failed");
+      }
     })();
   }
   return appPromise;
