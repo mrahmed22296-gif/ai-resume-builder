@@ -791,6 +791,9 @@ export default function ResumeBuilder() {
               /* popup closed or blocked; user can retry */
             }
           }}
+          onSignInRedirect={() => {
+            access.signInRedirect().catch(() => {});
+          }}
           onClose={() => access.setSignInPromptOpen(false)}
         />
       ) : null}

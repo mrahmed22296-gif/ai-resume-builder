@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getApps, initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import { getAuth, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut } from "firebase/auth";
 
 // Client access layer for the server-enforced paywall. Everything here is a
 // no-op pass-through unless NEXT_PUBLIC_PAYWALL_ENABLED=true, so the app
@@ -52,14 +52,40 @@ export function useResumeAccess() {
 
   useEffect(() => {
     if (!PAYWALL_ENABLED) return undefined;
-    return onAuthStateChanged(getFirebaseAuth(), current => {
+    const auth = getFirebaseAuth();
+    // Complete a redirect-flow sign-in if the page was just returned to from
+    // Google's consent screen. No-op on a normal load.
+    getRedirectResult(auth).catch(() => {});
+    return onAuthStateChanged(auth, current => {
       setUser(current);
       setAuthReady(true);
     });
   }, []);
 
+  const signInRedirect = useCallback(async () => {
+    await signInWithRedirect(getFirebaseAuth(), new GoogleAuthProvider());
+  }, []);
+
   const signIn = useCallback(async () => {
-    await signInWithPopup(getFirebaseAuth(), new GoogleAuthProvider());
+    const auth = getFirebaseAuth();
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      // Popup-hostile environments (popup blockers, some in-app/mobile
+      // browsers) never open the window; continue in the same page instead.
+      const fallbackCodes = new Set([
+        "auth/popup-blocked",
+        "auth/cancelled-popup-request",
+        "auth/operation-not-supported-in-this-environment",
+        "auth/web-storage-unsupported",
+      ]);
+      if (fallbackCodes.has(error?.code)) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      throw error;
+    }
   }, []);
 
   const signOutUser = useCallback(async () => {
@@ -114,6 +140,7 @@ export function useResumeAccess() {
     user,
     authReady,
     signIn,
+    signInRedirect,
     signOut: signOutUser,
     callGenerate,
     redeemCode,

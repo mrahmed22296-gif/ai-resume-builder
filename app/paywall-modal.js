@@ -124,7 +124,7 @@ export function PaywallModal({ lang, user, onClose, onRedeem }) {
   );
 }
 
-export function SignInPrompt({ lang, onSignIn, onClose }) {
+export function SignInPrompt({ lang, onSignIn, onSignInRedirect, onClose }) {
   const isArabic = lang !== "en";
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true">
@@ -142,7 +142,14 @@ export function SignInPrompt({ lang, onSignIn, onClose }) {
         >
           {isArabic ? "تسجيل الدخول بحساب Google" : "Sign in with Google"}
         </button>
-        <button type="button" onClick={onClose} className="text-xs text-slate-500 underline">
+        {onSignInRedirect ? (
+          <button type="button" onClick={onSignInRedirect} className="text-xs text-slate-500 underline">
+            {isArabic
+              ? "النافذة المنبثقة لا تفتح؟ أكمل تسجيل الدخول من هذه الصفحة"
+              : "Popup not opening? Continue sign-in from this page"}
+          </button>
+        ) : null}
+        <button type="button" onClick={onClose} className="text-xs text-slate-500 underline block mx-auto">
           {isArabic ? "إغلاق" : "Close"}
         </button>
       </div>
