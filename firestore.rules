@@ -1,0 +1,9 @@
+rules_version = '2';
+
+// All access is server-side via the Admin SDK (which bypasses these rules).
+// Clients must never read or write entitlements or activation codes directly.
+service cloud.firestore {
+  match /{document=**} {
+    allow read, write: if false;
+  }
+}

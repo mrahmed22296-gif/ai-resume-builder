@@ -5,8 +5,11 @@ import { Sparkles, Download, FileText, Plus, Trash2, Globe, Loader2 } from "luci
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
 import { saveAs } from "file-saver";
 import { generationErrorMessage } from "./generation-errors.mjs";
+import { useResumeAccess } from "./access";
+import { PaywallModal, SignInPrompt } from "./paywall-modal";
 
 export default function ResumeBuilder() {
+  const access = useResumeAccess();
   const [lang, setLang] = useState("ar");
   const [template, setTemplate] = useState("classic");
   const templateThemes = {
@@ -131,19 +134,12 @@ export default function ResumeBuilder() {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 65000);
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        signal: controller.signal,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: text.trim(), type, language: lang })
+      const result = await access.callGenerate({
+        prompt: requestPrompt,
+        type,
+        language: requestLanguage,
+        signal: controller.signal
       });
-      const data = await res.json();
-      if (!res.ok || typeof data.result !== "string" || !data.result.trim()) {
-        const error = new Error("Invalid AI response");
-        error.code = data?.code;
-        throw error;
-      }
-      const result = data.result.trim();
       const latest = latestForm.current;
       const currentExperience = latest.resume.experiences.find(exp => exp.id === expId);
       const currentPrompt = type === "summary"
@@ -167,7 +163,13 @@ export default function ResumeBuilder() {
         return current;
       });
     } catch (error) {
-      alert(generationErrorMessage(error?.name === "AbortError" ? "AI_TIMEOUT" : error?.code, latestForm.current.lang));
+      if (error?.code === "PAYWALL_REQUIRED") {
+        access.setPaywallOpen(true);
+      } else if (error?.code === "NO_AUTH") {
+        access.setSignInPromptOpen(true);
+      } else {
+        alert(generationErrorMessage(error?.name === "AbortError" ? "AI_TIMEOUT" : error?.code, latestForm.current.lang));
+      }
     } finally {
       clearTimeout(timeout);
       aiRequestInFlight.current = false;
@@ -200,14 +202,8 @@ export default function ResumeBuilder() {
     try {
       let translated = translationCache.current.get(key);
       if (!translated) {
-        const response = await fetch("/api/generate", {
-          method: "POST", signal: controller.signal,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt, type: "translation", language: targetLanguage })
-        });
-        const data = await response.json();
-        if (!response.ok) { const error = new Error(); error.code = data?.code; throw error; }
-        try { translated = JSON.parse(data.result); } catch { throw new Error(); }
+        const translatedText = await access.callGenerate({ prompt, type: "translation", language: targetLanguage, signal: controller.signal });
+        try { translated = JSON.parse(translatedText); } catch { throw new Error(); }
         if (!Array.isArray(translated) || translated.length !== texts.length || translated.some(value => typeof value !== "string" || !value.trim() || value.length > 20000)) throw new Error();
       }
       if (latestForm.current.lang !== sourceLanguage || JSON.stringify(latestForm.current.resume) !== JSON.stringify(sourceResume)) {
@@ -221,7 +217,13 @@ export default function ResumeBuilder() {
         experiences: current.experiences.map(exp => ({ ...exp, description: values[`exp-${exp.id}`] ?? exp.description })) }));
       setLang(targetLanguage);
     } catch (error) {
-      alert(generationErrorMessage(error?.name === "AbortError" ? "AI_TIMEOUT" : error?.code, latestForm.current.lang));
+      if (error?.code === "NO_AUTH") {
+        access.setSignInPromptOpen(true);
+      } else if (error?.code === "PAYWALL_REQUIRED") {
+        access.setPaywallOpen(true);
+      } else {
+        alert(generationErrorMessage(error?.name === "AbortError" ? "AI_TIMEOUT" : error?.code, latestForm.current.lang));
+      }
     } finally {
       clearTimeout(timeout);
       aiRequestInFlight.current = false;
@@ -367,6 +369,24 @@ export default function ResumeBuilder() {
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-3">
+          {access.enabled ? (
+            access.user ? (
+              <button
+                onClick={access.signOut}
+                title={access.user.email || ""}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition"
+              >
+                {lang === "ar" ? "حسابك" : "Account"}
+              </button>
+            ) : (
+              <button
+                onClick={() => access.setSignInPromptOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition"
+              >
+                {lang === "ar" ? "تسجيل الدخول" : "Sign in"}
+              </button>
+            )
+          ) : null}
           <button
             onClick={switchLanguage}
             disabled={loadingField !== null}
@@ -741,6 +761,29 @@ export default function ResumeBuilder() {
         </div>
 
       </main>
+
+      {access.enabled && access.paywallOpen ? (
+        <PaywallModal
+          lang={lang}
+          user={access.user}
+          onClose={() => access.setPaywallOpen(false)}
+          onRedeem={access.redeemCode}
+        />
+      ) : null}
+      {access.enabled && access.signInPromptOpen && !access.user ? (
+        <SignInPrompt
+          lang={lang}
+          onSignIn={async () => {
+            try {
+              await access.signIn();
+              access.setSignInPromptOpen(false);
+            } catch {
+              /* popup closed or blocked; user can retry */
+            }
+          }}
+          onClose={() => access.setSignInPromptOpen(false)}
+        />
+      ) : null}
     </div>
   );
                   }
