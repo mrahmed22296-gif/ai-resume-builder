@@ -24,6 +24,7 @@ async function authorizeRequest(req, body) {
   try {
     uid = await verifyFirebaseIdToken(token);
   } catch (error) {
+    console.error("generate auth failure:", error && (error.code || error.name), error && String(error.message || error).slice(0, 300));
     // Admin/secret misconfiguration is an operator problem, not an auth
     // rejection: surface it distinctly so it is never mistaken for a bad
     // sign-in and never silently consumes anything.
