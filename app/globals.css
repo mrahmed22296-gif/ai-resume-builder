@@ -57,3 +57,21 @@ body::before {
   #resume-preview h1, #resume-preview h3, #resume-preview h4 { break-after: avoid; }
   #resume-preview p { orphans: 2; widows: 2; }
 }
+
+.template-thumbnail { display: flex; flex-direction: column; gap: 4px; width: 48px; height: 60px; padding: 8px 6px; background: white; border: 1px solid #dbe2eb; margin: 0 auto 7px; box-shadow: 0 2px 5px #0f172a0a; }
+.template-thumbnail i { display: block; height: 2px; background: #d7dee8; width: 100%; }
+.template-thumbnail i:first-child { height: 5px; width: 70%; background: var(--template-color); margin: 0 auto 6px; }
+.template-thumbnail-modern { border-inline-start: 4px solid var(--template-color); }
+.template-thumbnail-modern i:first-child { margin-inline: 0; }
+.template-thumbnail-executive i:first-child { border-block: 1px solid var(--template-color); height: 8px; background: transparent; }
+#resume-preview[data-template="modern"] .resume-document-header { text-align: start; border-bottom: 0; border-inline-start: 5px solid #087f8c; padding-inline-start: 18px; }
+#resume-preview[data-template="modern"] .resume-document-header > div { justify-content: flex-start; }
+#resume-preview[data-template="modern"] h1, #resume-preview[data-template="modern"] h3 { color: #123c46; }
+#resume-preview[data-template="modern"] .resume-document-header > p { color: #087f8c; }
+#resume-preview[data-template="modern"] h3 { border-bottom: 2px solid #087f8c; letter-spacing: 0.04em; }
+#resume-preview[data-template="executive"] { font-family: Georgia, var(--font-arabic), serif; }
+#resume-preview[data-template="executive"] .resume-document-header { border-block: 2px solid #6d597a; padding-block: 18px; }
+#resume-preview[data-template="executive"] h1 { color: #292536; font-size: 32px; }
+#resume-preview[data-template="executive"] .resume-document-header > p { color: #6d597a; }
+#resume-preview[data-template="executive"] h3 { color: #292536; border-bottom: 1px solid #6d597a; letter-spacing: 0.12em; }
+@media print { .resume-template-picker { display: none !important; } #resume-preview { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
