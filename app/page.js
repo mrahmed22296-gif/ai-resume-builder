@@ -10,6 +10,8 @@ export default function ResumeBuilder() {
   const [lang, setLang] = useState("ar");
   const [loadingField, setLoadingField] = useState(null);
   const aiRequestInFlight = useRef(false);
+  const generatedFields = useRef(new Set());
+  const translationCache = useRef(new Map());
   const labels = {
   "ar": {
     "poweredBy": "مدعوم بواسطة Gemini AI",
@@ -144,6 +146,7 @@ export default function ResumeBuilder() {
           : "The result was not applied because you edited the source text or language while waiting. Your edits are safe; you can try again.");
         return;
       }
+      generatedFields.current.add(type === "summary" ? "summary" : `exp-${expId}`);
       setResume(current => {
         if (type === "summary") return { ...current, summary: result };
         if (type === "experience" && expId !== null) {
@@ -153,6 +156,60 @@ export default function ResumeBuilder() {
         }
         return current;
       });
+    } catch (error) {
+      alert(generationErrorMessage(error?.name === "AbortError" ? "AI_TIMEOUT" : error?.code, latestForm.current.lang));
+    } finally {
+      clearTimeout(timeout);
+      aiRequestInFlight.current = false;
+      setLoadingField(null);
+    }
+  };
+
+  const switchLanguage = async () => {
+    if (aiRequestInFlight.current) return;
+    const sourceLanguage = lang;
+    const targetLanguage = lang === "ar" ? "en" : "ar";
+    const sourceResume = resume;
+    const fields = [];
+    if (generatedFields.current.has("summary") && resume.summary.trim()) fields.push({ key: "summary", text: resume.summary });
+    for (const exp of resume.experiences) {
+      if (generatedFields.current.has(`exp-${exp.id}`) && exp.description.trim()) fields.push({ key: `exp-${exp.id}`, text: exp.description });
+    }
+    if (!fields.length) { setLang(targetLanguage); return; }
+    const texts = fields.map(field => field.text);
+    const prompt = JSON.stringify(texts);
+    if (prompt.length > 12000 || fields.length > 30) {
+      alert(lang === "ar" ? "النصوص طويلة للترجمة دفعة واحدة. لم تتغير بياناتك أو اللغة." : "The text is too long to translate in one request. Your content and language have not changed.");
+      return;
+    }
+    const key = JSON.stringify([targetLanguage, texts]);
+    aiRequestInFlight.current = true;
+    setLoadingField("translation");
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 65000);
+    try {
+      let translated = translationCache.current.get(key);
+      if (!translated) {
+        const response = await fetch("/api/generate", {
+          method: "POST", signal: controller.signal,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt, type: "translation", language: targetLanguage })
+        });
+        const data = await response.json();
+        if (!response.ok) { const error = new Error(); error.code = data?.code; throw error; }
+        try { translated = JSON.parse(data.result); } catch { throw new Error(); }
+        if (!Array.isArray(translated) || translated.length !== texts.length || translated.some(value => typeof value !== "string" || !value.trim() || value.length > 20000)) throw new Error();
+      }
+      if (latestForm.current.lang !== sourceLanguage || JSON.stringify(latestForm.current.resume) !== JSON.stringify(sourceResume)) {
+        alert(latestForm.current.lang === "ar" ? "لم تُطبّق الترجمة لأنك عدّلت البيانات أثناء الانتظار. تعديلاتك محفوظة." : "Translation was not applied because you edited the resume while waiting. Your edits are safe.");
+        return;
+      }
+      translationCache.current.set(key, translated);
+      translationCache.current.set(JSON.stringify([sourceLanguage, translated]), texts);
+      const values = Object.fromEntries(fields.map((field, index) => [field.key, translated[index]]));
+      setResume(current => ({ ...current, summary: values.summary ?? current.summary,
+        experiences: current.experiences.map(exp => ({ ...exp, description: values[`exp-${exp.id}`] ?? exp.description })) }));
+      setLang(targetLanguage);
     } catch (error) {
       alert(generationErrorMessage(error?.name === "AbortError" ? "AI_TIMEOUT" : error?.code, latestForm.current.lang));
     } finally {
@@ -298,11 +355,12 @@ export default function ResumeBuilder() {
 
         <div className="flex items-center gap-2.5 sm:gap-3">
           <button
-            onClick={() => setLang(lang === "ar" ? "en" : "ar")}
+            onClick={switchLanguage}
+            disabled={loadingField !== null}
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition"
           >
             <Globe size={16} />
-            {lang === "ar" ? "English" : "العربية"}
+            {loadingField === "translation" ? (lang === "ar" ? "جارٍ الترجمة..." : "Translating...") : (lang === "ar" ? "English" : "العربية")}
           </button>
 
           <button
