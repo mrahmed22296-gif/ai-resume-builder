@@ -62,3 +62,10 @@ test('client errors distinguish configuration, limit, timeout and incomplete tex
   }
   assert.match(generationErrorMessage('AI_CONFIGURATION','en'),/Retrying will not fix/);
 });
+test('translation preserves a strict ordered array and requests JSON without rewriting',async()=>{
+ let body;const r=await generateResumeText({prompt:JSON.stringify(['النص الأصلي']),type:'translation',language:'en'},{...config,fetchImpl:async(_,o)=>{body=JSON.parse(o.body);return response(complete(JSON.stringify(['Original text'])));}});
+ assert.equal(r.result,'["Original text"]');assert.equal(body.generationConfig.responseMimeType,'application/json');assert.equal(body.generationConfig.maxOutputTokens,8192);assert.match(body.systemInstruction.parts[0].text,/Do not add, omit, summarize/);
+});
+for(const bad of ['not JSON','[]','[1]','[""]','["one","two"]'])test('reject invalid translated array '+bad,async()=>{
+ const r=await generateResumeText({prompt:'["source"]',type:'translation',language:'en'},{...config,fetchImpl:async()=>response(complete(bad))});assert.equal(r.code,'AI_INCOMPLETE');
+});
