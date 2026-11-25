@@ -237,6 +237,7 @@ function ResumeBuilderInner() {
 
   // تحميل كملف Word (.docx)
   const exportToWord = async () => {
+    if (access && !access.tryConsume()) return;
     const isRtl = lang === "ar";
     const align = AlignmentType.START;
     const theme = templateThemes[template];
@@ -355,6 +356,7 @@ function ResumeBuilderInner() {
 
   // تحميل كملف PDF
   const exportToPDF = () => {
+    if (access && !access.tryConsume()) return;
     window.print();
   };
 
@@ -808,4 +810,4 @@ export default function ResumeBuilder() {
       <ResumeBuilderInner />
     </AuthGate>
   );
-}
+            }
