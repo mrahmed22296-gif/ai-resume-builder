@@ -15,19 +15,6 @@ const SITE_ID = "ai-resume-builder";
 const FREE_USES = 1;
 const WA_NUMBER = "96560085043";
 const QR_URL = "https://i.ibb.co/1GvzKs8r/Whats-App-Image-2026-08-06-at-4-44-31-PM-1.jpg";
-const VALID_CODES = [
-  "RESUME-2026-A1B2",
-  "RESUME-2026-C3D4",
-  "RESUME-2026-E5F6",
-  "RESUME-2026-G7H8",
-  "RESUME-2026-I9J0",
-  "WAMD-1001",
-  "WAMD-1002",
-  "WAMD-1003",
-  "WAMD-1004",
-  "WAMD-1005"
-];
-
 const AccessContext = createContext(null);
 
 export function useAccess() {
@@ -200,8 +187,20 @@ export function AuthGate({ children }) {
       setCodeMessage("أدخل كود التفعيل أولاً.");
       return;
     }
-    if (!VALID_CODES.includes(value)) {
-      setCodeMessage("الكود غير صحيح. تأكد من الكود وأعد المحاولة.");
+    setCodeMessage("جاري التحقق من الكود...");
+    try {
+      const res = await fetch("https://mohasaba-online.vercel.app/api/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site: SITE_ID, code: value })
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        setCodeMessage("الكود غير صحيح. تأكد من الكود وأعد المحاولة.");
+        return;
+      }
+    } catch (e) {
+      setCodeMessage("تعذر التحقق من الكود. تحقق من الاتصال وأعد المحاولة.");
       return;
     }
     window.localStorage.setItem(subKey(user.uid), "true");
