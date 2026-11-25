@@ -4,15 +4,16 @@ import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// Same Firebase project as the Masar jobs site, so one Google sign-in
-// and one user base is shared across all of the owner's sites.
+// The owner's own Firebase project ("resume-builder-access", AI Resume Pro),
+// shared by the resume builder and the accounting site for sign-in,
+// subscriptions, and visitor records.
 const firebaseConfig = {
-  apiKey: "AIzaSyCnsQtY9PdymuKG5suBX1psYgdkCHFFYKs",
-  authDomain: "jobsautosearch.firebaseapp.com",
-  projectId: "jobsautosearch",
-  storageBucket: "jobsautosearch.firebasestorage.app",
-  messagingSenderId: "810040080530",
-  appId: "1:810040080530:web:468f87f88571a510980e4b"
+  apiKey: "AIzaSyCBtfYpB_j8X1ME-lMqP738Fy06FalSXIM",
+  authDomain: "resume-builder-access.firebaseapp.com",
+  projectId: "resume-builder-access",
+  storageBucket: "resume-builder-access.firebasestorage.app",
+  messagingSenderId: "209097923358",
+  appId: "1:209097923358:web:90e660900f02a621b5c70f"
 };
 
 export function getFirebaseApp() {
