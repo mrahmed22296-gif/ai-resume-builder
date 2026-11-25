@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -82,3 +83,123 @@ body::before {
 .site-contact-links { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px 20px; }
 .site-contact-links a { color: #2563eb; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
 @media print { .site-contact-footer { display: none !important; } }
+
+
+/* ===== End-of-service calculator theme (Tajawal, sky + orange) ===== */
+:root {
+  --eos-primary: #0ea5e9;
+  --eos-primary-dark: #0369a1;
+  --eos-primary-light: #e0f2fe;
+  --eos-accent: #f97316;
+  --eos-accent-soft: #ffedd5;
+  --eos-ink: #0c2942;
+  --eos-ink-muted: #5b7285;
+  --eos-border: #dbeafe;
+  --eos-border-strong: #7dd3fc;
+  --eos-surface-2: #f6fbff;
+  --eos-shadow: 0 4px 18px rgba(14, 165, 233, 0.12), 0 1px 3px rgba(12, 41, 66, 0.06);
+  --eos-shadow-lg: 0 16px 44px rgba(3, 105, 161, 0.18);
+}
+
+/* Typography: Tajawal everywhere, like the calculator */
+body {
+  font-family: 'Tajawal', var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+body.antialiased { background-color: #f0f9ff; }
+html[dir="rtl"] body {
+  font-family: 'Tajawal', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Ambient background in calculator sky tones */
+body::before {
+  background:
+    radial-gradient(58rem 32rem at 88% -12%, rgba(14, 165, 233, 0.10), transparent 62%),
+    radial-gradient(50rem 28rem at 4% -16%, rgba(3, 105, 161, 0.08), transparent 62%),
+    radial-gradient(46rem 26rem at 50% 112%, rgba(249, 115, 22, 0.05), transparent 60%);
+}
+
+::selection { background: rgba(14, 165, 233, 0.22); color: #0c2942; }
+
+/* Header: calculator gradient band */
+.resume-app-header {
+  background: linear-gradient(135deg, #0ea5e9, #1e3a8a) !important;
+  border-bottom: none !important;
+  box-shadow: var(--eos-shadow-lg);
+}
+.resume-app-header .text-3xl, .resume-app-header .font-bold { color: #ffffff !important; }
+.resume-app-header .font-normal, .resume-app-header .text-slate-600, .resume-app-header p { color: rgba(224, 242, 254, 0.85) !important; }
+.resume-app-header .from-blue-500.to-violet-500 {
+  background-image: linear-gradient(135deg, #f97316, #fb923c) !important;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35) !important;
+}
+.resume-app-header button {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(6px);
+}
+.resume-app-header button:hover { background: rgba(255, 255, 255, 0.26) !important; }
+.resume-app-header button.bg-blue-600 {
+  background: #ffffff !important;
+  color: #0369a1 !important;
+  border-color: #ffffff !important;
+}
+
+/* Cards: calculator surfaces */
+.resume-editor > div, .resume-template-picker, .resume-main .bg-white {
+  border-color: var(--eos-border) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--eos-shadow) !important;
+}
+
+/* Section titles */
+.resume-editor .font-bold.text-base, .resume-template-picker .font-bold { color: var(--eos-ink) !important; }
+.resume-editor .border-b { border-color: var(--eos-border) !important; }
+
+/* Primary buttons */
+.resume-builder button.bg-blue-600 {
+  background: linear-gradient(135deg, #0ea5e9, #0369a1) !important;
+  box-shadow: 0 6px 16px rgba(14, 165, 233, 0.30) !important;
+  border-radius: 12px !important;
+}
+.resume-builder button.bg-blue-600:hover { filter: brightness(1.07); transform: translateY(-1px); }
+
+/* Secondary (sky-soft) buttons and chips */
+.resume-builder .bg-blue-50 {
+  background-color: var(--eos-primary-light) !important;
+  border-color: var(--eos-border-strong) !important;
+  color: #0369a1 !important;
+}
+.resume-builder .bg-blue-50:hover { background-color: #bae6fd !important; }
+.resume-builder .text-blue-600, .resume-builder .text-blue-700 { color: #0369a1 !important; }
+.resume-builder .hover\:text-blue-800:hover { color: #0c4a6e !important; }
+
+/* Inputs */
+.resume-builder input, .resume-builder textarea, .resume-builder select {
+  background-color: var(--eos-surface-2) !important;
+  border-color: var(--eos-border) !important;
+  border-radius: 10px !important;
+  color: var(--eos-ink) !important;
+}
+.resume-builder input:focus, .resume-builder textarea:focus, .resume-builder select:focus {
+  --tw-ring-color: rgba(14, 165, 233, 0.35) !important;
+  border-color: var(--eos-primary) !important;
+}
+
+/* Template picker hover */
+.resume-template-picker button { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+.resume-template-picker button:hover { transform: translateY(-2px); box-shadow: var(--eos-shadow-lg); }
+
+/* Labels and muted text in calculator ink */
+.resume-builder .text-slate-500 { color: var(--eos-ink-muted) !important; }
+.resume-builder .text-slate-800, .resume-builder .text-slate-900 { color: var(--eos-ink); }
+
+/* Footer in theme */
+.site-contact-footer {
+  background: linear-gradient(180deg, #f0f9ff, #e0f2fe);
+  border-top: 1px solid var(--eos-border-strong);
+  color: var(--eos-ink-muted);
+}
+.site-contact-credit { color: var(--eos-ink); }
+.site-contact-links a { color: var(--eos-primary-dark); }

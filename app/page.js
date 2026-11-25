@@ -5,8 +5,11 @@ import { Sparkles, Download, FileText, Plus, Trash2, Globe, Loader2 } from "luci
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
 import { saveAs } from "file-saver";
 import { generationErrorMessage } from "./generation-errors.mjs";
+import { AuthGate, useAccess } from "./auth-gate";
+import ContactWidget from "./contact-widget";
 
-export default function ResumeBuilder() {
+function ResumeBuilderInner() {
+  const access = useAccess();
   const [lang, setLang] = useState("ar");
   const [template, setTemplate] = useState("classic");
   const templateThemes = {
@@ -123,6 +126,7 @@ export default function ResumeBuilder() {
       return;
     }
     if (aiRequestInFlight.current) return;
+    if (access && !access.tryConsume()) return;
     aiRequestInFlight.current = true;
     setLoadingField(expId !== null ? `exp-${expId}` : type);
 
@@ -186,6 +190,7 @@ export default function ResumeBuilder() {
       if (generatedFields.current.has(`exp-${exp.id}`) && exp.description.trim()) fields.push({ key: `exp-${exp.id}`, text: exp.description });
     }
     if (!fields.length) { setLang(targetLanguage); return; }
+    if (access && !access.tryConsume()) return;
     const texts = fields.map(field => field.text);
     const prompt = JSON.stringify(texts);
     if (prompt.length > 12000 || fields.length > 30) {
@@ -743,14 +748,23 @@ export default function ResumeBuilder() {
       </main>
 
       {/* Owner attribution/contact footer; never printed or exported. */}
-      <footer className="site-contact-footer" aria-label="التواصل">
-        <p className="site-contact-credit">من تصميم وإعداد احمد عبدالكريم</p>
-        <div className="site-contact-links" dir="ltr">
-          <a href="mailto:mr.ahmed22296@gmail.com">mr.ahmed22296@gmail.com</a>
-          <a href="tel:60085043">60085043</a>
-          <a href="tel:01201487209">01201487209</a>
+      <footer className="site-contact-footer" aria-label="التواصل" style={{ background: "none", border: "none", padding: "0 16px 40px" }}>
+        <div style={{ maxWidth: 430, margin: "0 auto", background: "#0d1226", borderRadius: 24, padding: "28px 20px", textAlign: "center", color: "#fff", boxShadow: "0 16px 40px rgba(12, 41, 66, 0.25)" }}>
+          <div style={{ fontSize: 20, fontWeight: 900 }}>أ. أحمد عبدالكريم</div>
+          <div dir="ltr" style={{ marginTop: 12, fontSize: 14, color: "#cbd5e1" }}>✉️ <a href="mailto:mr.ahmed22296@gmail.com" style={{ color: "#cbd5e1", textDecoration: "none" }}>mr.ahmed22296@gmail.com</a></div>
+          <div dir="ltr" style={{ marginTop: 8, fontSize: 14, color: "#cbd5e1" }}>📱 <a href="tel:+96560085043" style={{ color: "#cbd5e1", textDecoration: "none" }}>60085043</a> / <a href="tel:+201201487209" style={{ color: "#cbd5e1", textDecoration: "none" }}>01201487209</a></div>
+          <div style={{ marginTop: 14, fontSize: 12, color: "#94a3b8" }}>© 2026 جميع الحقوق محفوظة — صانع السيرة الذاتية بالذكاء الاصطناعي</div>
         </div>
       </footer>
+      <ContactWidget />
     </div>
   );
                   }
+
+export default function ResumeBuilder() {
+  return (
+    <AuthGate>
+      <ResumeBuilderInner />
+    </AuthGate>
+  );
+}
